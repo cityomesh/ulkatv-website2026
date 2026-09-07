@@ -67,26 +67,29 @@ const BouquePage = () => {
   // ================================
   // Load Data (API + localStorage)
   // ================================
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const storedData = localStorage.getItem("bouqueData");
-        if (storedData) {
-          setBouqueData(JSON.parse(storedData));
-        }
+    useEffect(() => {
+      if (typeof window === "undefined") return;
 
-        const data = await fetchBouqueData();
-        if (data) {
-          setBouqueData(data);
-          localStorage.setItem("bouqueData", JSON.stringify(data));
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
+      const loadData = async () => {
+        try {
+          const storedData = localStorage.getItem("bouqueData");
+          if (storedData) {
+            setBouqueData(JSON.parse(storedData));
+          }
 
-    loadData();
-  }, []);
+          const data = await fetchBouqueData();
+          if (data) {
+            setBouqueData(data);
+            localStorage.setItem("bouqueData", JSON.stringify(data));
+          }
+        } catch (error) {
+          console.error("Error loading data:", error);
+        }
+      };
+
+      loadData();
+    }, []);
+
 
   // ================================
   // Filter Data
@@ -345,3 +348,4 @@ const BouquePage = () => {
 };
 
 export default BouquePage;
+

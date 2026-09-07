@@ -1,384 +1,47 @@
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import { FaBars, FaTimes } from "react-icons/fa";
-
-// const Home = () => {
-//   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-//   const [isScrolled, setIsScrolled] = useState(false);
-
-//   const toggleMobileMenu = () => {
-//     setMobileMenuOpen((prev) => !prev);  // Toggling the mobile menu state
-//   };
-
-//   useEffect(() => {
-//     const handleScroll = () => {
-//       setIsScrolled(window.scrollY > 60);  // Detecting scroll and adjusting header
-//     };
-
-//     window.addEventListener("scroll", handleScroll);  // Attaching scroll listener
-//     return () => {
-//       window.removeEventListener("scroll", handleScroll);  // Cleanup
-//     };
-//   }, []);
-
-//   return (
-//     <div className="bg-white">
-//       {/* Header */}
-//       <header
-//         className={`fixed top-0 left-0 w-full z-10 shadow-md transition-all duration-500 ease-in-out ${
-//           isScrolled ? "bg-white py-5" : "bg-white py-5"
-//         }`}
-//       >
-//         <div className="container mx-auto flex items-center justify-between">
-//           {/* Logo Section */}
-//           <div className="flex items-center justify-center text-black font-bold">
-//             <Link href="/">
-//               <Image
-//                 src="/ulka.jpg"
-//                 alt="logo"
-//                 width={isScrolled ? 150 : 200}
-//                 height={isScrolled ? 160 : 180}
-//                 className="rounded transition-all duration-500 ease-in-out ml-4"
-//               />
-//             </Link>
-//           </div>
-
-//           <div className="md:hidden px-4" onClick={toggleMobileMenu}>
-//             {isMobileMenuOpen ? (
-//               <FaTimes className="text-3xl cursor-pointer" /> 
-//             ) : (
-//               <FaBars className="text-3xl cursor-pointer" />
-//             )}
-//           </div>
-
-//           {/* Menu Items */}
-//           <ul
-//             className={`absolute text-[16px] md:static top-16 mt-2 left-0 w-full bg-white md:w-auto md:flex md:items-center md:space-x-6 text-blue-900 font-semibold transition-all duration-300 ease-in-out ${
-//               isMobileMenuOpen ? "block" : "hidden" 
-//             }`}
-//           >
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="/">Home</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/packs">BOUQUETS</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/ulka-lite">ULKA LITE</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/about">ABOUT US</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/contact-us">CONTACT US</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/terms-conditions">TERMS</Link>
-//             </li>
-//             <li className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link href="https://ulka.tv/policy">PRIVACY POLICY</Link>
-//             </li>
-//             <div className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <a
-//                 href="https://ulka.tv/customers/login"
-//                 className="inline-block bg-red-600 text-white px-6 py-2 rounded-md font-bold text-sm hover:bg-red-700"
-//               >
-//                 USER SIGN IN
-//               </a>
-//             </div>
-//           </ul>
-//         </div>
-//       </header>
-//     </div>
-//   );
-// };
-
-// export default Home;
-
-
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import { FaBars, FaTimes } from "react-icons/fa";
-
-// const Home = () => {
-//   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-//   const [isScrolled, setIsScrolled] = useState(false);
-
-//   const toggleMobileMenu = () => {
-//     setMobileMenuOpen((prev) => !prev);
-//   };
-
-//   useEffect(() => {
-//     const handleScroll = () => {
-//       setIsScrolled(window.scrollY > 60); 
-//     };
-
-//     window.addEventListener("scroll", handleScroll);
-//     return () => {
-//       window.removeEventListener("scroll", handleScroll);
-//     };
-//   }, []);
-
-//   return (
-//     <div className="bg-white">
-//       {/* Header */}
-//       <header
-//         className={`fixed top-0 left-0 w-full z-10 shadow-md transition-all duration-500 ease-in-out ${
-//           isScrolled ? "bg-white py-5" : "bg-white py-5"
-//         }`}
-//       >
-//         <div className="container mx-auto flex items-center justify-between">
-//           {/* Logo Section */}
-//           <div className="flex items-center justify-center text-black font-bold">
-//             <Link href="/">
-//               <Image
-//                 src="/ulka.jpg"
-//                 alt="logo"
-//                 width={isScrolled ? 150 : 200}
-//                 height={isScrolled ? 160 : 180}
-//                 className="rounded transition-all duration-500 ease-in-out ml-4"
-//               />
-//             </Link>
-//           </div>
-
-//           <div className="md:hidden px-4" onClick={toggleMobileMenu}>
-//             {isMobileMenuOpen ? (
-//               <FaTimes className="text-3xl cursor-pointer" /> 
-//             ) : (
-//               <FaBars className="text-3xl cursor-pointer" />
-//             )}
-//           </div>
-
-//           <ul
-//             className={`absolute text-[16px] md:static top-16 mt-2 left-0 w-full bg-white md:w-auto md:flex md:items-center md:space-x-6 text-blue-900 font-semibold transition-all duration-300 ease-in-out ${
-//               isMobileMenuOpen ? "block" : "hidden" 
-//             }`}
-//           >
-//            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="/"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               Home
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/packs"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               BOUQUETS
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/ulka-lite"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               ULKA LITE
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/about"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               ABOUT US
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/contact-us"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               CONTACT US
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/terms-conditions"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               TERMS
-//             </Link>
-//           </li>
-//           <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//             <Link
-//               href="https://ulka.tv/policy"
-//               className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//             >
-//               PRIVACY POLICY
-//             </Link>
-//           </li>
-//             <div className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <a
-//                 href="https://ulka.tv/customers/login"
-//                 className="inline-block bg-red-600 text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 USER SIGN IN
-//               </a>
-//             </div>
-//           </ul>
-//         </div>
-//       </header>
-//     </div>
-//   );
-// };
-
-// export default Home;
-
-
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import { FaBars, FaTimes, FaFacebookF, FaTwitter, FaPhone, FaInfoCircle, FaSignInAlt } from "react-icons/fa";
-
-// const Home = () => {
-//   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-//   const [isScrolled, setIsScrolled] = useState(false);
-
-//   const toggleMobileMenu = () => {
-//     setMobileMenuOpen((prev) => !prev);
-//   };
-
-//   useEffect(() => {
-//     const handleScroll = () => {
-//       setIsScrolled(window.scrollY > 60);
-//     };
-
-//     window.addEventListener("scroll", handleScroll);
-//     return () => {
-//       window.removeEventListener("scroll", handleScroll);
-//     };
-//   }, []);
-
-//   return (
-//     <div className="bg-white">
-//       <header
-//         className={`fixed top-0 left-0 w-full z-10 shadow-md transition-all duration-500 ease-in-out ${
-//           isScrolled ? "bg-white py-5" : "bg-white py-5"
-//         }`}
-//       >
-//         <div className="container mx-auto flex items-center justify-between">
-//           {/* Logo Section */}
-//           <div className="flex items-center justify-center text-black font-bold">
-//             <Link href="/">
-//               <Image
-//                 src="/ulka.jpg"
-//                 alt="logo"
-//                 width={isScrolled ? 150 : 200}
-//                 height={isScrolled ? 160 : 180}
-//                 className="rounded transition-all duration-500 ease-in-out ml-4"
-//               />
-//             </Link>
-//           </div>
-
-//           <div className="md:hidden px-4" onClick={toggleMobileMenu}>
-//             {isMobileMenuOpen ? (
-//               <FaTimes className="text-3xl cursor-pointer" />
-//             ) : (
-//               <FaBars className="text-3xl cursor-pointer" />
-//             )}
-//           </div>
-
-//           <ul
-//             className={`absolute text-[16px] md:static top-16 mt-2 left-0 w-full bg-white md:w-auto md:flex md:items-center md:space-x-6 text-blue-900 font-semibold transition-all duration-300 ease-in-out ${
-//               isMobileMenuOpen ? "block" : "hidden"
-//             }`}
-//           >
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="/"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 Home
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/packs"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 BOUQUETS
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/ulka-lite"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 ULKA LITE
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/about"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 ABOUT US
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/contact-us"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 CONTACT US
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/terms-conditions"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 TERMS
-//               </Link>
-//             </li>
-//             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <Link
-//                 href="https://ulka.tv/policy"
-//                 className="inline-block bg-transparent hover:bg-black hover:text-white px-2 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 PRIVACY POLICY
-//               </Link>
-//             </li>
-//             <div className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-//               <a
-//                 href="https://ulka.tv/customers/login"
-//                 className="inline-block bg-red-600 text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-//               >
-//                 USER SIGN IN
-//               </a>
-//             </div>
-//           </ul>
-//         </div>
-//       </header>
-//     </div>
-//   );
-// };
-
-// export default Home;
-
-
-
-
+// Header.tsx
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaBars, FaTimes, FaFacebookF, FaTwitter, FaPhone } from "react-icons/fa";
+import {
+  FaBars,
+  FaTimes,
+  FaChevronDown,
+} from "react-icons/fa";
 
-const Home = () => {
+const Header = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
+  const [technologyDropdownOpen, setTechnologyDropdownOpen] =
+    useState(false);
+  const [signinDropdownOpen, setSigninDropdownOpen] = useState(false);
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen((prev) => !prev);
+    setAboutDropdownOpen(false);
+    setTechnologyDropdownOpen(false);
+    setSigninDropdownOpen(false);
+  };
+
+  const toggleAboutDropdown = () => {
+    setAboutDropdownOpen((prev) => !prev);
+    setTechnologyDropdownOpen(false);
+    setSigninDropdownOpen(false);
+  };
+
+  const toggleTechnologyDropdown = () => {
+    setTechnologyDropdownOpen((prev) => !prev);
+    setAboutDropdownOpen(false);
+    setSigninDropdownOpen(false);
+  };
+
+  const toggleSigninDropdown = () => {
+    setSigninDropdownOpen((prev) => !prev);
+    setAboutDropdownOpen(false);
+    setTechnologyDropdownOpen(false);
   };
 
   useEffect(() => {
@@ -387,156 +50,328 @@ const Home = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      if (!target.closest(".dropdown-container")) {
+        setAboutDropdownOpen(false);
+        setTechnologyDropdownOpen(false);
+        setSigninDropdownOpen(false);
+      }
     };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (
     <div className="bg-black">
       <header
-        className={`fixed top-0 left-0 w-full z-10 shadow-md transition-all duration-500 ease-in-out ${
-          isScrolled ? "bg-black py-3" : "bg-black py-5"
+        className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-500 ease-in-out ${
+          isScrolled
+            ? "bg-black py-2"
+            : "bg-black py-3 md:py-5"
         }`}
       >
-    <div className="site-header-top-wrapper py-2 flex justify-between items-center px-4 md:px-8 lg:px-12">
-      <div className="flex space-x-4">
-        <a href="#" title="Facebook" className="text-white hover:text-blue-800"><FaFacebookF /></a>
-        <a href="#" title="Twitter" className="text-white hover:text-blue-600"><FaTwitter /></a>
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        <span className="text-white font-medium hidden sm:block">FOR QUERIES? CALL:</span>
-        <a href="tel:7416410888" className="text-white font-bold hover:underline">74164 10888</a>
-        <FaPhone className="text-white" />
-      </div>
-      
-      <div className="flex items-center space-x-8 hidden sm:flex">
-        <a href="https://store.ulka.tv/" className="text-white font-medium hover:text-blue-600">STORE</a>
-        <a href="https://ulka.tv/faq" className="text-white font-medium hover:text-blue-600">F.A.Q</a>
-        <a href="https://partners.ulka.tv/" className="text-white font-medium hover:text-blue-600">PARTNER LOGIN</a>
-      </div>
-    </div>
-
         <div className="container mx-auto flex items-center justify-between">
+          {/* ================= LOGO ================= */}
           <div
             className={`flex items-center justify-center text-black font-bold transition-all duration-500 ${
-              isScrolled ? "p-2 rounded-md" : ""
+              isScrolled ? "p-1 rounded-md" : ""
             }`}
           >
             <Link href="/">
               <Image
                 src="/tv (2).png"
                 alt="logo"
-                width={isScrolled ? 120 : 200}
-                height={isScrolled ? 120 : 180}
+                width={isScrolled ? 140 : 220}
+                height={isScrolled ? 140 : 220}
                 className="rounded transition-all duration-500 ease-in-out px-2"
               />
             </Link>
           </div>
 
-          <div className="md:hidden px-4 text-white" onClick={toggleMobileMenu}>
+          {/* ================= MOBILE MENU BUTTON ================= */}
+          <div
+            className="md:hidden px-4 text-white"
+            onClick={toggleMobileMenu}
+          >
             {isMobileMenuOpen ? (
-              <FaTimes className="text-3xl cursor-pointer" />
+              <FaTimes className="text-2xl cursor-pointer" />
             ) : (
-              <FaBars className="text-3xl cursor-pointer" />
+              <FaBars className="text-2xl cursor-pointer" />
             )}
           </div>
 
+          {/* ================= NAVIGATION ================= */}
           <ul
-            className={`absolute text-[16px] md:static top-16 mt-2 left-0 w-full bg-black md:w-auto md:flex md:items-center md:space-x-6 text-blue-900 font-semibold transition-all duration-300 ease-in-out ${
+            className={`absolute text-[14px] md:static top-[60px] left-0 w-full bg-black md:w-auto md:flex md:items-center md:space-x-5 text-blue-900 font-semibold transition-all duration-300 ease-in-out ${
               isMobileMenuOpen ? "block" : "hidden"
             }`}
           >
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
+            {/* HOME */}
+            <li className="cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
               <Link
                 href="/"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-6 py-2 rounded-md font-bold transition-all duration-300"
+                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-4 py-1.5 rounded-md font-bold transition-all duration-300 text-sm"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 HOME
               </Link>
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <Link
-                href="/bouquets"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
-              >
-                ALL
-              </Link>
-            </li>
 
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
+            {/* BOUQUETS */}
+            <li className="cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
               <Link
                 href="/pagebouquets"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-1.5 rounded-md font-bold transition-all duration-300 text-sm"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 BOUQUETS
               </Link>
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <Link
-                href="/technology"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+
+            {/* ================================================= */}
+            {/* TECHNOLOGY DROPDOWN */}
+            {/* ================================================= */}
+            <li className="relative dropdown-container cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
+              <button
+                onClick={toggleTechnologyDropdown}
+                className="inline-flex items-center bg-transparent text-white hover:bg-white hover:text-black px-2 py-1.5 rounded-md font-bold transition-all duration-300 text-sm"
               >
                 TECHNOLOGY
-              </Link>
+                <FaChevronDown
+                  className={`ml-1 text-[10px] transition-transform duration-300 ${
+                    technologyDropdownOpen
+                      ? "rotate-180"
+                      : ""
+                  }`}
+                />
+              </button>
+
+              {technologyDropdownOpen && (
+                <ul className="absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-1 w-48 bg-black border border-gray-700 rounded-md shadow-lg z-20 overflow-hidden">
+
+                  {/* TECHNOLOGY */}
+                  <li>
+                    <Link
+                      href="/technology"
+                      className="block px-4 py-2.5 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm font-semibold"
+                      onClick={() => {
+                        setTechnologyDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      TECHNOLOGY
+                    </Link>
+                  </li>
+
+                  {/* SMART TV */}
+                  <li>
+                    <Link
+                      href="/smarttv"
+                      className="block px-4 py-2.5 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm font-semibold"
+                      onClick={() => {
+                        setTechnologyDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      SMART TV
+                    </Link>
+                  </li>
+
+                  {/* SMART MOBILE */}
+                  <li>
+                    <Link
+                      href="/smartmobile"
+                      className="block px-4 py-2.5 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm font-semibold"
+                      onClick={() => {
+                        setTechnologyDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      SMART MOBILE
+                    </Link>
+                  </li>
+
+                  {/* SET TOP BOX */}
+                  <li>
+                    <Link
+                      href="/stb"
+                      className="block px-4 py-2.5 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm font-semibold"
+                      onClick={() => {
+                        setTechnologyDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      SET TOP BOX
+                    </Link>
+                  </li>
+
+                  {/* ULKA STICK */}
+                  <li>
+                    <Link
+                      href="/stick"
+                      className="block px-4 py-2.5 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm font-semibold"
+                      onClick={() => {
+                        setTechnologyDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      ULKA STICK
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <Link
-                href="/about"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+
+            {/* ================================================= */}
+            {/* ABOUT US DROPDOWN */}
+            {/* ================================================= */}
+            <li className="relative dropdown-container cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
+              <button
+                onClick={toggleAboutDropdown}
+                className="inline-flex items-center bg-transparent text-white hover:bg-white hover:text-black px-2 py-1.5 rounded-md font-bold transition-all duration-300 text-sm"
               >
                 ABOUT US
-              </Link>
+                <FaChevronDown className="ml-1 text-[10px]" />
+              </button>
+
+              {aboutDropdownOpen && (
+                <ul className="absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-1 w-44 bg-black border border-gray-700 rounded-md shadow-lg z-20 overflow-hidden">
+
+                  {/* ABOUT */}
+                  <li>
+                    <Link
+                      href="/about"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setAboutDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      ABOUT
+                    </Link>
+                  </li>
+
+                  {/* PRIVACY POLICY */}
+                  <li>
+                    <Link
+                      href="/policy"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setAboutDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      PRIVACY POLICY
+                    </Link>
+                  </li>
+
+                  {/* TERMS */}
+                  <li>
+                    <Link
+                      href="/terms"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setAboutDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      TERMS
+                    </Link>
+                  </li>
+
+                  {/* FAQ */}
+                  <li>
+                    <a
+                      href="/faq"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setAboutDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      FAQ
+                    </a>
+                  </li>
+                </ul>
+              )}
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
+
+            {/* PARTNERS */}
+            <li className="cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
               <Link
                 href="/partners"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-1.5 rounded-md font-bold transition-all duration-300 text-sm"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 PARTNERS
               </Link>
             </li>
+
+            {/* CONTACT US */}
             <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
               <Link
                 href="/contact"
                 className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 CONTACT US
               </Link>
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <Link
-                href="/terms"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
+
+            {/* ================================================= */}
+            {/* SIGN IN DROPDOWN */}
+            {/* ================================================= */}
+            <li className="relative dropdown-container cursor-pointer py-1.5 px-4 md:py-0 md:px-0 text-left md:text-center">
+              <button
+                onClick={toggleSigninDropdown}
+                className="inline-flex items-center bg-red-600 text-white px-4 py-1.5 rounded-md font-bold transition-all duration-300 hover:bg-red-700 text-sm"
               >
-                TERMS
-              </Link>
+                SIGN IN
+                <FaChevronDown className="ml-1 text-[10px]" />
+              </button>
+
+              {signinDropdownOpen && (
+                <ul className="absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-1 w-44 bg-black border border-gray-700 rounded-md shadow-lg z-20 overflow-hidden">
+
+                  {/* USER LOGIN */}
+                  <li>
+                    <Link
+                      href="/login"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setSigninDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      USER LOGIN
+                    </Link>
+                  </li>
+
+                  {/* PARTNER LOGIN */}
+                  <li>
+                    <a
+                      href="https://partners.ulka.tv/"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setSigninDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      PARTNER LOGIN
+                    </a>
+                  </li>
+                </ul>
+              )}
             </li>
-            <li className="cursor-pointer py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <Link
-                href="/policy"
-                className="inline-block bg-transparent text-white hover:bg-white hover:text-black px-2 py-2 rounded-md font-bold transition-all duration-300"
-              >
-                PRIVACY POLICY
-              </Link>
-            </li>
-            {/* <div className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <a
-                href="https://ulka.tv/customers/login"
-                className="inline-block bg-red-600 text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-              >
-                USER SIGN IN
-              </a>
-            </div> */}
-            <div className="cursor-pointer hover:text-[#F7961E] py-2 px-4 md:py-0 md:px-0 text-left md:text-center">
-              <a
-                href="/login"
-                className="inline-block bg-red-600 text-white px-6 py-2 rounded-md font-bold transition-all duration-300"
-              >
-                USER SIGN IN
-              </a>
-            </div>
           </ul>
         </div>
       </header>
@@ -544,4 +379,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Header;

@@ -1,215 +1,212 @@
+// SmartTvPage.tsx
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { Carousel } from "react-responsive-carousel";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { motion } from "framer-motion";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 const SmartTvPage: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+    const images = [
+        { src: "/ulkatv_home1.png", alt: "Smart TV" },
+        { src: "/google_tv.png", alt: "Smart TV" },
+        { src: "/firestick.png", alt: "Smart TV" },
+        { src: "/Samsung.png", alt: "Smart TV" },
+        { src: "/ulkatv_setopbox.png", alt: "Smart TV" },
+    ];
 
-  const images = [
-    { src: "/mcnbvb.png", alt: "Smart TV" },
-    { src: "/ytye.png", alt: "Smart TV" },
-    { src: "/iuysa.png", alt: "Smart TV" },
-    { src: "/devsg.png", alt: "Smart TV" },
-    { src: "/firetvstick.png", alt: "Smart TV" },
-  ];
+    const text = {
+        title: "Ulka Smart TV App for connected smart televisions. Ulka Lite is available in Android, Fire TV, Samsung and LG Apps Stores.",
+        mobileAppText: "My Ulka App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
+        footerText: "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
+    };
 
-  const texts = [
-    {
-      title: "Ulka Smart TV App for connected smart televisions. Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores. and LG TV is under process.",
-      description:
-        "Ulka Mini Mobile App is available in Android Smart Phones and I-Phone is under process.",
-      mobileAppText: "My Ulka App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
-      footerText:
-        "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
-    },
-    {
-      title: "Ulka Smart TV App for connected smart televisions. Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores. and LG TV is under process.",
-      description:
-        "Ulka Mini Mobile App is available in Android Smart Phones and I-Phone is under process.",
-      mobileAppText: "My Ulka App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
-      footerText:
-        "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
-    },
-    {
-      title: "UlkaTv Smart TV App for connected smart televisions. Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores. and LG TV is under process.",
-      description:
-        "Ulka Mini Mobile App is available in Android Smart Phones and I-Phone is under process.",
-      mobileAppText: "My UlkaTv App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
-      footerText:
-        "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
-    },
-    {
-      title: "Ulka Smart TV App for connected smart televisions. Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores. and LG TV is under process.",
-      description:
-        "Ulka Mini Mobile App is available in Android Smart Phones and I-Phone is under process.",
-      mobileAppText: "My Ulka App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
-      footerText:
-        "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
-    },
-    {
-      title: "Ulka Smart TV App for connected smart televisions. Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores. and LG TV is under process.",
-      description:
-        "Ulka Mini Mobile App is available in Android Smart Phones and I-Phone is under process.",
-      mobileAppText: "My Ulka App for Subscription Management and on-demand subscription of addon packs or a-la-carte channels. This app is available on Android and i-Phone Mobile App Stores.",
-      footerText:
-        "Ulka STB's and Sticks provide live tv channels and also supports popular OTT Apps for upgrading older tvs to smart tvs.",
-    },
-  ];
+    const platforms = [
+        { name: "Android TV", src: "/ulkatv_home1.png" },
+        { name: "Google TV", src: "/google_tv.png" },
+        { name: "Fire TV", src: "/firetv.png" },
+        { name: "Fire Stick", src: "/firestick.png" },
+        { name: "Samsung TV", src: "/Samsung.png" },
+        { name: "Set-Top-Box", src: "/ulkatv_setopbox.png" },
+    ];
 
-  const platforms = [
-    { name: 'Android TV', src: ["/androidtvs.png"] },
-    { name: 'Google TV', src: ["/hytyrd.png"] },
-    { name: 'Fire TV', src: ["/tre.png"] },
-    { name: 'Fire Stick & Android Stick', src: ["/stickfire.png"] },
-    { name: 'Samsung TV', src: ["/tvsvmsung.png"] },
-    { name: 'Set-Top-Box', src: ["/tvvs.png"] },
-  ];
+    const contentSections = [
+        { src: "/old-tv.png", alt: "Old TV", label: "Traditional TV" },
+        { src: "/digitalTV.png", alt: "Digital TV", label: "Digital TV" },
+        { src: "/Smart_TV.png", alt: "Smart TV", label: "Smart TV" },
+    ];
 
-  const contentSections = [
-    { src: "/swtr.png", alt: "SMART TV" },
-    { src: "/oldtv.png", alt: "SMART TV" },
-    { src: "/newtvulka.png", alt: "Smart TV" },
-  ];
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center px-4 pt-24 pb-12">
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 mt-[4rem]">
-      <div className="flex flex-col items-center justify-center px-4">
-        <h1 className="text-4xl font-bold text-center text-black mt-[6rem] mb-8">
-          Future of Television in India
-        </h1>
-        <div className="flex flex-col lg:flex-row items-center gap-8 mb-8">
-          {contentSections.map((section, index) => (
-            <React.Fragment key={index}>
-              <div className="flex flex-col items-center text-center">
-                <Image
-                  src={section.src}
-                  alt={section.alt}
-                  width={index === 2 ? 480 : 120}
-                  height={index === 2 ? 488 : 120}
-                  className={`rounded-[1.5rem] ${
-                    index === 2 ? "w-[24rem] h-[16rem]" : "w-[20rem] h-[14rem]"
-                  }`}
-                />
-              </div>
-              {index < contentSections.length - 1 && (
-                <div className="hidden lg:block text-[60px] font-bold text-blue-900">
-                  →
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-5 px-4 mb-8">
-          {[
-            "The Television sets are being upgraded at a very fast pace.",
-            "4K Smart TVs are common today and the traditional Set-top-Boxes are unable to upgrade to the standards of 4K Televisions.",
-            "Smart TV share of new Television sales is more then 95%.",
-            "UlkaTV 4K compatible distribution system has TRAI approved Virtual STB Application for Smart TVs and Smart Phones.",
-          ].map((text, index) => (
-            <motion.div
-              key={index}
-              initial={{ x: "-100vw" }}
-              animate={{ x: 0 }}
-              transition={{
-                duration: 1.5,
-                type: "spring",
-                stiffness: 50,
-                delay: index * 0.3,
-              }}
-              className={`p-5 rounded-lg shadow-md w-full max-w-2xl hover:scale-105 transition-transform ${
-                text ===
-                "Ulka 4K compatible distribution system has TRAI approved Virtual STB Application for Smart TVs and Smart Phones."
-                  ? "bg-gradient-to-r from-green-100 to-red-100"
-                  : "bg-blue text-black hover:bg-red-100 hover:text-black"
-              }`}
+            {/* ===== HEADER ===== */}
+            <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-10"
             >
-              <h2 className="text-xl font-bold">{text}</h2>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+                Future of Television in India
+            </motion.h1>
 
-      <div className="p-6 bg-[#0a0f2c] rounded-[20px] mb-8 mt-6">
-        <h2 className="text-2xl font-bold text-center text-white mb-6">Ulka App is available in Android TV, Google TV, Fire TV, Fire Stick, Samsung TV App Stores and LG TV is under process</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center justify-center bg-white p-4 shadow rounded-lg border-2 border-gray-200"
-            >
-              <div className="flex items-center justify-center h-[300px] w-full">
-                {platform.src.map((imageSrc, i) => (
-                  <Image
-                    key={i}
-                    src={imageSrc}
-                    alt={`${platform.name} ${i + 1}`}
-                    width={400}
-                    height={400}
-                    className="rounded-md object-contain"
-                  />
+            {/* ===== TV EVOLUTION ROW ===== */}
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 mb-10 w-full max-w-6xl">
+                {contentSections.map((section, index) => (
+                    <React.Fragment key={index}>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: index * 0.15 }}
+                            className="flex flex-col items-center bg-white rounded-2xl shadow-md p-4 w-full max-w-xs"
+                        >
+                            <div className="relative w-full h-48 flex items-center justify-center bg-gray-100 rounded-xl overflow-hidden">
+                                <Image
+                                    src={section.src}
+                                    alt={section.alt}
+                                    width={280}
+                                    height={200}
+                                    className="object-contain w-full h-full p-2"
+                                    style={{ objectFit: "contain" }}
+                                />
+                            </div>
+                            <p className="text-sm font-semibold text-gray-600 mt-2">{section.label}</p>
+                        </motion.div>
+                        {index < contentSections.length - 1 && (
+                            <div className="hidden lg:block text-4xl font-light text-blue-600">→</div>
+                        )}
+                    </React.Fragment>
                 ))}
-              </div>
-              <div className="flex items-center justify-center h-[50px] w-full">
-                <p className="text-xl text-center font-bold">{platform.name}</p>
-              </div>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 mt-[2rem]">
-        <div>
-          <Carousel
-            showThumbs={true}
-            autoPlay
-            infiniteLoop
-            interval={1000}
-            onChange={(index) => setActiveIndex(index)}
-          >
-            {images.map((image, index) => (
-              <div key={index} className="flex justify-center items-center">
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  width={500}
-                  height={500}
-                  className="rounded-lg mt-4"
-                />
-              </div>
-            ))}
-          </Carousel>
-        </div>
-        <div className="flex flex-col justify-start items-center md:items-start text-center md:text-left">
-          <div className="p-3 border-2 border-gray-300 bg-blue-400 mb-2 rounded-lg shadow-xl transition-all hover:bg-blue-500 hover:scale-105">
-            <p className="text-xl font-bold text-black">
-              {texts[activeIndex]?.title.split("Ulka Smart TV")[0]}
-              <span className="text-2xl font-bold text-white">Ulka Smart TV</span>
-              {texts[activeIndex]?.title.split("Ulka Smart TV")[1]}
-            </p>
-          </div>
-          <div className="p-3 border-2 border-gray-300 bg-green-500 mb-2 rounded-lg shadow-xl transition-all hover:bg-green-400 hover:scale-105">
-            <p className="text-xl font-bold text-black">
-              {texts[activeIndex]?.description.split("Ulka Mini")[0]}
-              <span className="text-2xl font-bold text-white">Ulka Mini</span>
-              {texts[activeIndex]?.description.split("Ulka Mini")[1]}
-            </p>
-          </div>
-          <div className="p-3 border-2 border-gray-300 bg-yellow-400 mb-2 rounded-lg shadow-xl transition-all hover:bg-yellow-300 hover:scale-105">
-            <div className="text-xl font-bold text-black">
-              {texts[activeIndex]?.mobileAppText.split("My Ulka App")[0]}
-              <span className="text-2xl font-bold text-white">My UlkaTv App</span>
-              {texts[activeIndex]?.mobileAppText.split("My UlkaTv App")[1]}
+
+            {/* ===== STATS / INFO CARDS ===== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-6xl mb-10">
+                {[
+                    "The Television sets are being upgraded at a very fast pace.",
+                    "4K Smart TVs are common today and the traditional Set-top-Boxes are unable to upgrade to the standards of 4K Televisions.",
+                    "Smart TV share of new Television sales is more then 95%.",
+                    "UlkaTV 4K compatible distribution system has TRAI approved Virtual STB Application for Smart TVs and Smart Phones.",
+                ].map((item, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ x: "-100vw" }}
+                        animate={{ x: 0 }}
+                        transition={{
+                            duration: 1.2,
+                            type: "spring",
+                            stiffness: 60,
+                            delay: index * 0.2,
+                        }}
+                        className={`p-4 rounded-xl shadow-sm border ${
+                            index === 3
+                                ? "border-blue-200 bg-gradient-to-br from-blue-50 to-red-50"
+                                : "border-gray-200 bg-white hover:shadow-md transition-shadow"
+                        }`}
+                    >
+                        <p className="text-sm text-gray-700 leading-relaxed">{item}</p>
+                    </motion.div>
+                ))}
             </div>
-          </div>
-          <div className="p-3 border-2 border-gray-300 bg-purple-300 rounded-lg shadow-xl transition-all hover:bg-purple-400 hover:scale-105 mb-4">
-            <p className="text-xl font-bold text-black">{texts[activeIndex]?.footerText}</p>
-          </div>
+
+            {/* ===== PLATFORMS SECTION ===== */}
+            <div className="w-full max-w-6xl bg-[#0a0f2c] rounded-2xl p-6 mb-10">
+                <h2 className="text-xl font-semibold text-center text-white mb-6">
+                    Ulka Lite is available in Android, Fire TV, Samsung and LG Apps Stores
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {platforms.map((platform, index) => (
+                        <motion.div
+                            key={index}
+                            whileHover={{ y: -4, scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-xl p-3 flex flex-col items-center shadow-md"
+                        >
+                            <div className="w-full h-28 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                                <Image
+                                    src={platform.src}
+                                    alt={platform.name}
+                                    width={120}
+                                    height={100}
+                                    className="object-contain w-full h-full p-1"
+                                    style={{ objectFit: "contain" }}
+                                />
+                            </div>
+                            <p className="text-xs font-medium text-gray-700 mt-2 text-center leading-tight">
+                                {platform.name}
+                            </p>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+
+            {/* ===== CAROUSEL + TEXT SIDE-BY-SIDE ===== */}
+            <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+                {/* Carousel */}
+                <div className="bg-white rounded-2xl shadow-lg p-4">
+                    <Carousel
+                        showThumbs
+                        autoPlay
+                        infiniteLoop
+                        interval={1200}
+                        showStatus={false}
+                        className="rounded-xl overflow-hidden"
+                    >
+                        {images.map((image, index) => (
+                            <div key={index} className="flex items-center justify-center h-64">
+                                <Image
+                                    src={image.src}
+                                    alt={image.alt}
+                                    width={400}
+                                    height={300}
+                                    className="object-contain w-full h-full p-2"
+                                    style={{ objectFit: "contain" }}
+                                />
+                            </div>
+                        ))}
+                    </Carousel>
+                </div>
+
+                {/* Info Blocks */}
+                <div className="flex flex-col gap-4">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-4 shadow-sm"
+                    >
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                            {text.title.split("Ulka Smart TV")[0]}
+                            <span className="font-bold text-blue-700">Ulka Smart TV</span>
+                            {text.title.split("Ulka Smart TV")[1]}
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.25 }}
+                        className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 shadow-sm"
+                    >
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                            {text.mobileAppText.split("My Ulka App")[0]}
+                            <span className="font-bold text-yellow-700">My Ulka App</span>
+                            {text.mobileAppText.split("My Ulka App")[1]}
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                        className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4 shadow-sm"
+                    >
+                        <p className="text-sm text-gray-700 leading-relaxed">{text.footerText}</p>
+                    </motion.div>
+                </div>
+            </div>
+
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default SmartTvPage;
