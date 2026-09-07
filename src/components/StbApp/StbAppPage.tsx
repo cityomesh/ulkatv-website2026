@@ -128,7 +128,7 @@ const StbAppPage = () => {
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-white via-red-600 to-white z-10" />
 
                 <Image
-                  src="/Set_top_box.png"
+                  src="/set_top_box.png"
                   alt="Set Top Box"
                   width={900}
                   height={600}

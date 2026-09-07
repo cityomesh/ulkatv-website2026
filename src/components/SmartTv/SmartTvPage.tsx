@@ -26,7 +26,7 @@ const SmartTvPage: React.FC = () => {
         { name: "Google TV", src: "/google_tv.png" },
         { name: "Fire TV", src: "/firetv.png" },
         { name: "Fire Stick", src: "/firestick.png" },
-        { name: "Samsung TV", src: "/Samsung.png" },
+        { name: "Samsung TV", src: "/samsung.png" },
         { name: "Set-Top-Box", src: "/ulkatv_setopbox.png" },
     ];
 
