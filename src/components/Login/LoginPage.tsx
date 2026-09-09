@@ -1,111 +1,352 @@
-
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+
+import {
+  useState,
+} from "react";
+
+import {
+  useRouter,
+} from "next/navigation";
+
 import Image from "next/image";
 
-const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter(); // Next.js router
+// ======================================================
+// TYPES
+// ======================================================
 
-  const handleLogin = async (e: React.FormEvent) => {
+interface LoginApiData {
+  access_token?: string;
+  auth_token?: string;
+  token?: string;
+}
+
+interface LoginApiResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+
+  data?: LoginApiData;
+}
+
+// ======================================================
+// COMPONENT
+// ======================================================
+
+const Login = () => {
+  const [
+    username,
+    setUsername,
+  ] = useState("");
+
+  const [
+    password,
+    setPassword,
+  ] = useState("");
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    success,
+    setSuccess,
+  ] = useState("");
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const router =
+    useRouter();
+
+  // ====================================================
+  // LOGIN
+  // ====================================================
+
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
+
+    if (loading) {
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccess("");
 
     try {
-      const response = await fetch(
-        "https://partners.ulka.tv/api/railtel.php/v1/user/login?vr=railtel1.1",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            LoginForm: {
-              username,
-              password,
+      // ==================================================
+      // ULKA LOGIN
+      // ==================================================
+
+      const response =
+        await fetch(
+          "https://partners.ulka.tv/api/railtel.php/v1/user/login?vr=railtel1.1",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Accept:
+                "application/json",
             },
-          }),
-        }
+
+            body: JSON.stringify({
+              LoginForm: {
+                username:
+                  username.trim(),
+
+                password,
+              },
+            }),
+          }
+        );
+
+      // ==================================================
+      // PARSE RESPONSE
+      // ==================================================
+
+      const text =
+        await response.text();
+
+      let data: LoginApiResponse;
+
+      try {
+        data =
+          JSON.parse(
+            text
+          ) as LoginApiResponse;
+      } catch {
+        throw new Error(
+          "ULKA server returned an invalid response."
+        );
+      }
+
+      console.log(
+        "ULKA Login Response:",
+        data
       );
 
-      const data = await response.json();
+      // ==================================================
+      // SUCCESS
+      // ==================================================
 
-      if (data.success) {
-        setSuccess("User login successful!");
-        console.log("User Data:", data.data);
-        localStorage.setItem("access_token", data.data.access_token);
+      if (
+        response.ok &&
+        data.success &&
+        data.data?.access_token
+      ) {
+        // ================================================
+        // SAVE ACCESS TOKEN
+        // ================================================
 
-        setTimeout(() => {
-          router.push("/");
-        }, 1000); // Delay navigation slightly for UX
-      } else {
-        setError(data.message || "Invalid credentials. Please try again.");
+        localStorage.setItem(
+          "access_token",
+          data.data.access_token
+        );
+
+        // ================================================
+        // SAVE AUTH TOKEN
+        // ================================================
+
+        if (
+          data.data.auth_token
+        ) {
+          localStorage.setItem(
+            "auth_token",
+            data.data.auth_token
+          );
+        } else {
+          localStorage.removeItem(
+            "auth_token"
+          );
+        }
+
+        console.log(
+          "ULKA Login Successful"
+        );
+
+        setSuccess(
+          "User login successful!"
+        );
+
+        // ================================================
+        // GO TO BOUQUETS
+        // ================================================
+
+        router.push(
+          "/pagebouquets"
+        );
+
+        return;
       }
-     } catch {
-      setError("Something went wrong. Please try again later.");
+
+      // ==================================================
+      // LOGIN FAILED
+      // ==================================================
+
+      console.error(
+        "ULKA Login Failed:",
+        data
+      );
+
+      setError(
+        data.message ||
+          data.error ||
+          "Invalid username or password. Please try again."
+      );
+    } catch (
+      error: unknown
+    ) {
+      console.error(
+        "ULKA Login Error:",
+        error
+      );
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again later."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ======================================================
+  // UI
+  // ======================================================
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
+
       <div className="w-full max-w-xl p-8 bg-black rounded-lg shadow-lg">
+
+        {/* LOGO */}
+
         <div className="text-center mb-6">
-          <Image 
-            src="/tv (2).png" 
-            alt="ULKA TV Logo" 
-            width={300} 
-            height={150} 
+
+          <Image
+            src="/tv (2).png"
+            alt="ULKA TV Logo"
+            width={300}
+            height={150}
+            priority
             className="mx-auto bg-black"
           />
+
         </div>
-        <form onSubmit={handleLogin}>
+
+        {/* LOGIN FORM */}
+
+        <form
+          onSubmit={
+            handleLogin
+          }
+        >
+
+          {/* USERNAME */}
+
           <input
             type="text"
             placeholder="Username"
-            className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none"
+            autoComplete="username"
+            className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) =>
+              setUsername(
+                e.target.value
+              )
+            }
+            disabled={loading}
             required
           />
+
+          {/* PASSWORD */}
+
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none"
+            autoComplete="current-password"
+            className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            disabled={loading}
             required
           />
-          {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-          {success && <p className="text-green-500 text-sm mb-3">{success}</p>}
+
+          {/* ERROR */}
+
+          {error && (
+            <div className="mb-3 rounded-md bg-red-950 border border-red-700 p-3">
+              <p className="text-red-400 text-sm">
+                {error}
+              </p>
+            </div>
+          )}
+
+          {/* SUCCESS */}
+
+          {success && (
+            <div className="mb-3 rounded-md bg-green-950 border border-green-700 p-3">
+              <p className="text-green-400 text-sm">
+                {success}
+              </p>
+            </div>
+          )}
+
+          {/* BUTTON */}
+
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-md"
             disabled={loading}
+            className={`w-full text-white font-bold py-3 rounded-md transition ${
+              loading
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading
+              ? "Logging in..."
+              : "Login"}
           </button>
+
         </form>
+
+        {/* LINKS */}
+
         <div className="flex justify-between text-sm mt-4 text-gray-400">
-          <a href="#" className="hover:text-white">
+
+          <a
+            href="#"
+            className="hover:text-white transition"
+          >
             Signup/Register
           </a>
-          <a href="/forgotpassword" className="hover:text-white">
+
+          <a
+            href="/forgotpassword"
+            className="hover:text-white transition"
+          >
             Forgot password?
           </a>
+
         </div>
+
       </div>
+
     </div>
   );
 };
 
 export default Login;
-
