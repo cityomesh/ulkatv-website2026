@@ -352,7 +352,7 @@ const Header = () => {
                         setMobileMenuOpen(false);
                       }}
                     >
-                      USER LOGIN
+                      ADMIN LOGIN
                     </Link>
                   </li>
 
@@ -369,6 +369,20 @@ const Header = () => {
                       PARTNER LOGIN
                     </a>
                   </li>
+                  {/* USER LOGIN */}
+                  <li>
+                    <Link
+                      href="/userlogin"
+                      className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
+                      onClick={() => {
+                        setSigninDropdownOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      USER LOGIN
+                    </Link>
+                  </li>
+
                 </ul>
               )}
             </li>

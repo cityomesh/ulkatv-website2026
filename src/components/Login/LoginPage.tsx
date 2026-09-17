@@ -97,25 +97,27 @@ const Login = () => {
                 "application/json",
             },
 
-            body: JSON.stringify({
-              LoginForm: {
-                username:
-                  username.trim(),
+            body:
+              JSON.stringify({
+                LoginForm: {
+                  username:
+                    username.trim(),
 
-                password,
-              },
-            }),
+                  password,
+                },
+              }),
           }
         );
 
       // ==================================================
-      // PARSE RESPONSE
+      // READ RESPONSE
       // ==================================================
 
       const text =
         await response.text();
 
-      let data: LoginApiResponse;
+      let data:
+        LoginApiResponse;
 
       try {
         data =
@@ -129,47 +131,104 @@ const Login = () => {
       }
 
       console.log(
-        "ULKA Login Response:",
+        "ULKA LOGIN RESPONSE:",
         data
       );
 
       // ==================================================
-      // SUCCESS
+      // GET TOKEN
+      // ==================================================
+
+      const accessToken =
+        data.data?.access_token;
+
+      const authToken =
+        data.data?.auth_token;
+
+      const fallbackToken =
+        data.data?.token;
+
+      const token =
+        accessToken ||
+        authToken ||
+        fallbackToken;
+
+      // ==================================================
+      // LOGIN SUCCESS
       // ==================================================
 
       if (
         response.ok &&
         data.success &&
-        data.data?.access_token
+        token
       ) {
+        // ================================================
+        // CLEAR OLD TOKENS
+        // ================================================
+
+        localStorage.removeItem(
+          "access_token"
+        );
+
+        localStorage.removeItem(
+          "auth_token"
+        );
+
+        localStorage.removeItem(
+          "ulka_token"
+        );
+
         // ================================================
         // SAVE ACCESS TOKEN
         // ================================================
 
-        localStorage.setItem(
-          "access_token",
-          data.data.access_token
-        );
+        if (
+          accessToken
+        ) {
+          localStorage.setItem(
+            "access_token",
+            accessToken
+          );
+        }
 
         // ================================================
         // SAVE AUTH TOKEN
         // ================================================
 
         if (
-          data.data.auth_token
+          authToken
         ) {
           localStorage.setItem(
             "auth_token",
-            data.data.auth_token
+            authToken
           );
-        } else {
-          localStorage.removeItem(
-            "auth_token"
+        }
+
+        // ================================================
+        // SAVE FALLBACK TOKEN
+        // ================================================
+
+        if (
+          fallbackToken
+        ) {
+          localStorage.setItem(
+            "ulka_token",
+            fallbackToken
           );
         }
 
         console.log(
-          "ULKA Login Successful"
+          "ULKA LOGIN SUCCESSFUL"
+        );
+
+        console.log(
+          "access_token:",
+          Boolean(accessToken)
+        );
+
+        console.log(
+          "auth_token:",
+          Boolean(authToken)
         );
 
         setSuccess(
@@ -192,7 +251,7 @@ const Login = () => {
       // ==================================================
 
       console.error(
-        "ULKA Login Failed:",
+        "ULKA LOGIN FAILED:",
         data
       );
 
@@ -205,7 +264,7 @@ const Login = () => {
       error: unknown
     ) {
       console.error(
-        "ULKA Login Error:",
+        "ULKA LOGIN ERROR:",
         error
       );
 
@@ -215,7 +274,9 @@ const Login = () => {
           : "Something went wrong. Please try again later."
       );
     } finally {
-      setLoading(false);
+      setLoading(
+        false
+      );
     }
   };
 
@@ -258,13 +319,19 @@ const Login = () => {
             placeholder="Username"
             autoComplete="username"
             className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
-            value={username}
-            onChange={(e) =>
+            value={
+              username
+            }
+            onChange={(
+              e
+            ) =>
               setUsername(
                 e.target.value
               )
             }
-            disabled={loading}
+            disabled={
+              loading
+            }
             required
           />
 
@@ -275,13 +342,19 @@ const Login = () => {
             placeholder="Password"
             autoComplete="current-password"
             className="w-full p-3 mb-3 bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
-            value={password}
-            onChange={(e) =>
+            value={
+              password
+            }
+            onChange={(
+              e
+            ) =>
               setPassword(
                 e.target.value
               )
             }
-            disabled={loading}
+            disabled={
+              loading
+            }
             required
           />
 
@@ -289,9 +362,11 @@ const Login = () => {
 
           {error && (
             <div className="mb-3 rounded-md bg-red-950 border border-red-700 p-3">
+
               <p className="text-red-400 text-sm">
                 {error}
               </p>
+
             </div>
           )}
 
@@ -299,9 +374,11 @@ const Login = () => {
 
           {success && (
             <div className="mb-3 rounded-md bg-green-950 border border-green-700 p-3">
+
               <p className="text-green-400 text-sm">
                 {success}
               </p>
+
             </div>
           )}
 
@@ -309,7 +386,9 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={
+              loading
+            }
             className={`w-full text-white font-bold py-3 rounded-md transition ${
               loading
                 ? "bg-gray-600 cursor-not-allowed"

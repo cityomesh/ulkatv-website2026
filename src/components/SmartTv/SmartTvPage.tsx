@@ -144,11 +144,14 @@ const SmartTvPage: React.FC = () => {
                 {/* Carousel */}
                 <div className="bg-white rounded-2xl shadow-lg p-4">
                     <Carousel
-                        showThumbs
+                        showThumbs={false}        // ✅ Warning fix
+                        showStatus={false}        // ✅ Bottom "1 of 5" strip తీసేయడానికి
+                        showIndicators={true}     // ✅ Bottom dots
                         autoPlay
                         infiniteLoop
                         interval={1200}
-                        showStatus={false}
+                        swipeable
+                        emulateTouch
                         className="rounded-xl overflow-hidden"
                     >
                         {images.map((image, index) => (

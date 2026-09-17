@@ -1,13 +1,13 @@
 "use client";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-// import UlkaBouquets from "../../components/UlkaBouquets/UlkaBouquetsPage"
+import DashboardPage from "../../components/Dashboard/DashboardPage";
 
 const UlkaBouquetsPage: React.FC = () => {
   return (
     <>     
       <Header />
-      {/* <UlkaBouquets /> */}
+      <DashboardPage />
       <Footer />
     </>
   );
