@@ -343,7 +343,7 @@ const Header = () => {
                 <ul className="absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-1 w-44 bg-black border border-gray-700 rounded-md shadow-lg z-20 overflow-hidden">
 
                   {/* USER LOGIN */}
-                  <li>
+                  {/* <li>
                     <Link
                       href="/login"
                       className="block px-4 py-2 text-white hover:bg-white hover:text-black transition-all duration-300 text-sm"
@@ -354,7 +354,7 @@ const Header = () => {
                     >
                       ADMIN LOGIN
                     </Link>
-                  </li>
+                  </li> */}
 
                   {/* PARTNER LOGIN */}
                   <li>

@@ -1,851 +1,4 @@
-// //bouquets//route.ts
-// import { NextResponse } from "next/server";
-
-// export const dynamic = "force-dynamic";
-
-// export const revalidate = 0;
-
-// export const runtime = "nodejs";
-
-// // ======================================================
-// // ULKA API URLS
-// // ======================================================
-
-// const LOGIN_URL =
-//   "https://partners.ulka.tv/api/railtel.php/v1/user/login?vr=railtel1.1";
-
-// const BOUQUET_URL =
-//   "https://partners.ulka.tv/api/railtel.php/v1/operator-bouque";
-
-// // ======================================================
-// // CACHE SETTINGS
-// // ======================================================
-
-// const TOKEN_TTL = 10 * 60 * 1000;
-// // 10 minutes
-
-// const DATA_TTL = 5 * 60 * 1000;
-// // 5 minutes
-
-// // ======================================================
-// // API TYPES
-// // ======================================================
-
-// interface UlkaApiObject {
-//   [key: string]: unknown;
-// }
-
-// interface TokenCache {
-//   token: string;
-//   expiresAt: number;
-// }
-
-// interface DataCache {
-//   data: unknown;
-//   expiresAt: number;
-// }
-
-// interface BouquetFetchResult {
-//   unauthorized: boolean;
-//   data: unknown;
-// }
-
-// // ======================================================
-// // GLOBAL CACHE
-// // ======================================================
-// //
-// // This cache survives between requests while the same
-// // Node.js process is running.
-// // ======================================================
-
-// declare global {
-//   // eslint-disable-next-line no-var
-//   var __ulkaBouquetTokenCache:
-//     | TokenCache
-//     | undefined;
-
-//   // eslint-disable-next-line no-var
-//   var __ulkaBouquetDataCache:
-//     | DataCache
-//     | undefined;
-// }
-
-// // ======================================================
-// // TYPE HELPER
-// // ======================================================
-
-// /**
-//  * Check whether unknown value is an object.
-//  */
-// const isObject = (
-//   value: unknown
-// ): value is UlkaApiObject => {
-//   return (
-//     typeof value === "object" &&
-//     value !== null &&
-//     !Array.isArray(value)
-//   );
-// };
-
-// // ======================================================
-// // GET PROPERTY SAFELY
-// // ======================================================
-
-// const getProperty = (
-//   value: unknown,
-//   key: string
-// ): unknown => {
-//   if (!isObject(value)) {
-//     return undefined;
-//   }
-
-//   return value[key];
-// };
-
-// // ======================================================
-// // GET STRING PROPERTY SAFELY
-// // ======================================================
-
-// const getStringProperty = (
-//   value: unknown,
-//   key: string
-// ): string | undefined => {
-//   const property =
-//     getProperty(
-//       value,
-//       key
-//     );
-
-//   if (
-//     typeof property ===
-//     "string"
-//   ) {
-//     return property;
-//   }
-
-//   return undefined;
-// };
-
-// // ======================================================
-// // GET API MESSAGE
-// // ======================================================
-
-// const getApiMessage = (
-//   value: unknown
-// ): string | undefined => {
-//   return getStringProperty(
-//     value,
-//     "message"
-//   );
-// };
-
-// // ======================================================
-// // GET API DATA
-// // ======================================================
-
-// const getApiData = (
-//   value: unknown
-// ): unknown => {
-//   return getProperty(
-//     value,
-//     "data"
-//   );
-// };
-
-// // ======================================================
-// // GET ULKA TOKEN
-// // ======================================================
-
-// const getUlkaToken =
-//   async (): Promise<string> => {
-//     const now =
-//       Date.now();
-
-//     // ==================================================
-//     // CHECK TOKEN CACHE
-//     // ==================================================
-
-//     const cachedToken =
-//       globalThis
-//         .__ulkaBouquetTokenCache;
-
-//     if (
-//       cachedToken &&
-//       cachedToken.expiresAt >
-//         now
-//     ) {
-//       console.log(
-//         "Using cached ULKA token..."
-//       );
-
-//       return cachedToken.token;
-//     }
-
-//     // ==================================================
-//     // TOKEN NOT AVAILABLE
-//     // ==================================================
-
-//     console.log(
-//       "ULKA token cache expired. Logging in..."
-//     );
-
-//     // ==================================================
-//     // ENVIRONMENT VARIABLES
-//     // ==================================================
-
-//     const username =
-//       process.env
-//         .ULKA_USERNAME;
-
-//     const password =
-//       process.env
-//         .ULKA_PASSWORD;
-
-//     if (
-//       !username ||
-//       !password
-//     ) {
-//       throw new Error(
-//         "ULKA_USERNAME or ULKA_PASSWORD is not configured."
-//       );
-//     }
-
-//     // ==================================================
-//     // ULKA LOGIN
-//     // ==================================================
-
-//     const loginResponse =
-//       await fetch(
-//         LOGIN_URL,
-//         {
-//           method: "POST",
-
-//           headers: {
-//             "Content-Type":
-//               "application/json",
-
-//             Accept:
-//               "application/json",
-//           },
-
-//           body: JSON.stringify({
-//             LoginForm: {
-//               username,
-//               password,
-//             },
-//           }),
-
-//           // Do not cache login request
-//           cache: "no-store",
-//         }
-//       );
-
-//     // ==================================================
-//     // READ LOGIN RESPONSE
-//     // ==================================================
-
-//     let loginData: unknown;
-
-//     try {
-//       loginData =
-//         await loginResponse.json();
-//     } catch {
-//       throw new Error(
-//         "ULKA login returned invalid JSON."
-//       );
-//     }
-
-//     console.log(
-//       "ULKA login status:",
-//       loginResponse.status
-//     );
-
-//     // ==================================================
-//     // CHECK LOGIN SUCCESS
-//     // ==================================================
-
-//     const loginSuccess =
-//       getProperty(
-//         loginData,
-//         "success"
-//       );
-
-//     if (
-//       !loginResponse.ok ||
-//       loginSuccess !== true
-//     ) {
-//       console.error(
-//         "ULKA login failed:",
-//         loginData
-//       );
-
-//       const message =
-//         getApiMessage(
-//           loginData
-//         );
-
-//       throw new Error(
-//         message ||
-//           `ULKA login failed (${loginResponse.status})`
-//       );
-//     }
-
-//     // ==================================================
-//     // EXTRACT TOKEN
-//     // ==================================================
-
-//     let token:
-//       | string
-//       | undefined;
-
-//     // --------------------------------------------------
-//     // Possible response:
-//     //
-//     // {
-//     //   access_token: "..."
-//     // }
-//     // --------------------------------------------------
-
-//     token =
-//       getStringProperty(
-//         loginData,
-//         "access_token"
-//       );
-
-//     // --------------------------------------------------
-//     // Possible response:
-//     //
-//     // {
-//     //   token: "..."
-//     // }
-//     // --------------------------------------------------
-
-//     if (!token) {
-//       token =
-//         getStringProperty(
-//           loginData,
-//           "token"
-//         );
-//     }
-
-//     // --------------------------------------------------
-//     // Possible response:
-//     //
-//     // {
-//     //   data: {
-//     //     access_token: "..."
-//     //   }
-//     // }
-//     // --------------------------------------------------
-
-//     const nestedLoginData =
-//       getApiData(
-//         loginData
-//       );
-
-//     if (!token) {
-//       token =
-//         getStringProperty(
-//           nestedLoginData,
-//           "access_token"
-//         );
-//     }
-
-//     // --------------------------------------------------
-//     // Possible response:
-//     //
-//     // {
-//     //   data: {
-//     //     token: "..."
-//     //   }
-//     // }
-//     // --------------------------------------------------
-
-//     if (!token) {
-//       token =
-//         getStringProperty(
-//           nestedLoginData,
-//           "token"
-//         );
-//     }
-
-//     // ==================================================
-//     // TOKEN VALIDATION
-//     // ==================================================
-
-//     if (!token) {
-//       console.error(
-//         "ULKA login response:",
-//         loginData
-//       );
-
-//       throw new Error(
-//         "ULKA login succeeded but no access token was returned."
-//       );
-//     }
-
-//     // ==================================================
-//     // SAVE TOKEN IN CACHE
-//     // ==================================================
-
-//     globalThis
-//       .__ulkaBouquetTokenCache = {
-//         token,
-
-//         expiresAt:
-//           Date.now() +
-//           TOKEN_TTL,
-//       };
-
-//     console.log(
-//       "ULKA token cached for 10 minutes."
-//     );
-
-//     return token;
-//   };
-
-// // ======================================================
-// // FETCH BOUQUETS
-// // ======================================================
-
-// const fetchBouquets =
-//   async (
-//     token: string
-//   ): Promise<BouquetFetchResult> => {
-//     // ==================================================
-//     // CREATE URL
-//     // ==================================================
-
-//     const url =
-//       new URL(
-//         BOUQUET_URL
-//       );
-
-//     // ==================================================
-//     // QUERY PARAMETERS
-//     // ==================================================
-
-//     url.searchParams.set(
-//       "expand",
-//       "boxtype_lbl,type_lbl,status_lbl,created_by_lbl"
-//     );
-
-//     url.searchParams.set(
-//       "filter[operator_id]",
-//       "3021"
-//     );
-
-//     url.searchParams.set(
-//       "vr",
-//       "railtel1.1"
-//     );
-
-//     console.log(
-//       "Calling ULKA bouquet API..."
-//     );
-
-//     // ==================================================
-//     // REQUEST
-//     // ==================================================
-
-//     const response =
-//       await fetch(
-//         url.toString(),
-//         {
-//           method: "GET",
-
-//           headers: {
-//             Accept:
-//               "application/json",
-
-//             Authorization:
-//               `Bearer ${token}`,
-//           },
-
-//           // Do not cache external API request
-//           cache: "no-store",
-//         }
-//       );
-
-//     // ==================================================
-//     // READ RESPONSE
-//     // ==================================================
-
-//     let data: unknown;
-
-//     try {
-//       data =
-//         await response.json();
-//     } catch {
-//       throw new Error(
-//         "ULKA bouquet API returned invalid JSON."
-//       );
-//     }
-
-//     console.log(
-//       "ULKA bouquet API status:",
-//       response.status
-//     );
-
-//     // ==================================================
-//     // TOKEN EXPIRED
-//     // ==================================================
-
-//     if (
-//       response.status ===
-//         401 ||
-//       response.status ===
-//         403
-//     ) {
-//       return {
-//         unauthorized: true,
-
-//         data,
-//       };
-//     }
-
-//     // ==================================================
-//     // API ERROR
-//     // ==================================================
-
-//     if (
-//       !response.ok
-//     ) {
-//       const message =
-//         getApiMessage(
-//           data
-//         );
-
-//       throw new Error(
-//         message ||
-//           `ULKA bouquet API failed (${response.status})`
-//       );
-//     }
-
-//     // ==================================================
-//     // SUCCESS
-//     // ==================================================
-
-//     return {
-//       unauthorized: false,
-
-//       data,
-//     };
-//   };
-
-// // ======================================================
-// // GET API ROUTE
-// // ======================================================
-
-// export async function GET() {
-//   const startedAt =
-//     Date.now();
-
-//   console.log(
-//     "========================================"
-//   );
-
-//   console.log(
-//     "ULKA BOUQUET API START"
-//   );
-
-//   console.log(
-//     "========================================"
-//   );
-
-//   try {
-//     // ==================================================
-//     // CHECK BOUQUET DATA CACHE
-//     // ==================================================
-
-//     const now =
-//       Date.now();
-
-//     const cachedData =
-//       globalThis
-//         .__ulkaBouquetDataCache;
-
-//     if (
-//       cachedData &&
-//       cachedData.expiresAt >
-//         now
-//     ) {
-//       console.log(
-//         "Returning cached ULKA bouquet data."
-//       );
-
-//       console.log(
-//         `Cache response time: ${
-//           Date.now() -
-//           startedAt
-//         }ms`
-//       );
-
-//       return NextResponse.json(
-//         {
-//           success: true,
-
-//           status: 200,
-
-//           cached: true,
-
-//           data:
-//             cachedData.data,
-//         },
-//         {
-//           status: 200,
-//         }
-//       );
-//     }
-
-//     // ==================================================
-//     // GET ULKA TOKEN
-//     // ==================================================
-
-//     let token =
-//       await getUlkaToken();
-
-//     // ==================================================
-//     // FETCH BOUQUETS
-//     // ==================================================
-
-//     let result =
-//       await fetchBouquets(
-//         token
-//       );
-
-//     // ==================================================
-//     // TOKEN EXPIRED
-//     // ==================================================
-
-//     if (
-//       result.unauthorized
-//     ) {
-//       console.log(
-//         "ULKA token rejected. Refreshing token..."
-//       );
-
-//       // ----------------------------------------------
-//       // CLEAR OLD TOKEN
-//       // ----------------------------------------------
-
-//       globalThis
-//         .__ulkaBouquetTokenCache =
-//         undefined;
-
-//       // ----------------------------------------------
-//       // LOGIN AGAIN
-//       // ----------------------------------------------
-
-//       token =
-//         await getUlkaToken();
-
-//       // ----------------------------------------------
-//       // RETRY ONCE
-//       // ----------------------------------------------
-
-//       result =
-//         await fetchBouquets(
-//           token
-//         );
-//     }
-
-//     // ==================================================
-//     // SECOND AUTH FAILURE
-//     // ==================================================
-
-//     if (
-//       result.unauthorized
-//     ) {
-//       throw new Error(
-//         "ULKA authentication failed while fetching bouquets."
-//       );
-//     }
-
-//     // ==================================================
-//     // GET RESPONSE DATA
-//     // ==================================================
-
-//     const bouquetData =
-//       result.data;
-
-//     // ==================================================
-//     // EXTRACT ACTUAL BOUQUET ARRAY
-//     // ==================================================
-
-//     let finalData:
-//       unknown;
-
-//     // --------------------------------------------------
-//     // CASE 1
-//     //
-//     // API response itself is an array
-//     //
-//     // [
-//     //   {...},
-//     //   {...}
-//     // ]
-//     // --------------------------------------------------
-
-//     if (
-//       Array.isArray(
-//         bouquetData
-//       )
-//     ) {
-//       finalData =
-//         bouquetData;
-//     }
-
-//     // --------------------------------------------------
-//     // CASE 2
-//     //
-//     // API response:
-//     //
-//     // {
-//     //   data: [...]
-//     // }
-//     // --------------------------------------------------
-
-//     else {
-//       const nestedData =
-//         getApiData(
-//           bouquetData
-//         );
-
-//       if (
-//         Array.isArray(
-//           nestedData
-//         )
-//       ) {
-//         finalData =
-//           nestedData;
-//       } else {
-//         finalData =
-//           bouquetData;
-//       }
-//     }
-
-//     // ==================================================
-//     // CACHE BOUQUET DATA
-//     // ==================================================
-
-//     globalThis
-//       .__ulkaBouquetDataCache = {
-//         data:
-//           finalData,
-
-//         expiresAt:
-//           Date.now() +
-//           DATA_TTL,
-//       };
-
-//     console.log(
-//       "ULKA bouquet data cached for 5 minutes."
-//     );
-
-//     // ==================================================
-//     // PERFORMANCE LOG
-//     // ==================================================
-
-//     console.log(
-//       `Total bouquet API time: ${
-//         Date.now() -
-//         startedAt
-//       }ms`
-//     );
-
-//     console.log(
-//       "========================================"
-//     );
-
-//     console.log(
-//       "ULKA BOUQUET API END"
-//     );
-
-//     console.log(
-//       "========================================"
-//     );
-
-//     // ==================================================
-//     // SUCCESS RESPONSE
-//     // ==================================================
-
-//     return NextResponse.json(
-//       {
-//         success: true,
-
-//         status: 200,
-
-//         cached: false,
-
-//         data:
-//           finalData,
-//       },
-//       {
-//         status: 200,
-//       }
-//     );
-//   } catch (
-//     error: unknown
-//   ) {
-//     // ==================================================
-//     // ERROR LOG
-//     // ==================================================
-
-//     console.error(
-//       "Bouquet API Error:",
-//       error
-//     );
-
-//     console.log(
-//       `Total failed request time: ${
-//         Date.now() -
-//         startedAt
-//       }ms`
-//     );
-
-//     // ==================================================
-//     // SAFE ERROR MESSAGE
-//     // ==================================================
-
-//     let message =
-//       "Failed to fetch ULKA bouquet data.";
-
-//     if (
-//       error instanceof Error
-//     ) {
-//       message =
-//         error.message;
-//     } else if (
-//       typeof error ===
-//       "string"
-//     ) {
-//       message =
-//         error;
-//     }
-
-//     // ==================================================
-//     // ERROR RESPONSE
-//     // ==================================================
-
-//     return NextResponse.json(
-//       {
-//         success: false,
-
-//         status: 500,
-
-//         message,
-//       },
-//       {
-//         status: 500,
-//       }
-//     );
-//   }
-// }
-
-
-
-
+// //api/ulka//bouquets//route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -853,109 +6,97 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 // ======================================================
-// ULKA BOUQUET API
+// ✅ OPERATOR ID (FIXED)
 // ======================================================
-// Uses same endpoint as the browser (verified working):
-// https://partners.ulka.tv/api/index.php/v1/operator-bouque
-//      ?expand=boxtype_lbl,type_lbl,status_lbl,created_by_lbl
-//      &filter[operator_id]=3021
-//      &vr=web1.0
-// ======================================================
-
-const ULKA_BOUQUET_URL =
-  "https://partners.ulka.tv/api/index.php/v1/operator-bouque";
-
 const OPERATOR_ID = "3021";
+
+// ======================================================
+// ✅ MULTI-ENDPOINT FALLBACK
+// ======================================================
+// channelapi token ki railtel.php endpoint valid.
+// Kani bouquet endpoint path confirm cheyyaleka,
+// 3 possible URLs try chestamu — edi success aithe adi use chestamu.
+// ======================================================
+
+interface EndpointDef {
+  name: string;
+  url: string;
+}
+
+const buildEndpoints = (): EndpointDef[] => {
+  const expand = "boxtype_lbl,type_lbl,status_lbl,created_by_lbl,rate";
+
+  return [
+    // 1. railtel.php + operator-bouque (channelapi token ki best guess)
+    {
+      name: "railtel-operator-bouque",
+      url:
+        `https://partners.ulka.tv/api/railtel.php/v1/operator-bouque` +
+        `?expand=${expand}` +
+        `&filter[operator_id]=${OPERATOR_ID}` +
+        `&per-page=5000` +
+        `&vr=railtel1.1`,
+    },
+
+    // 2. railtel.php + bouque/list
+    {
+      name: "railtel-bouque-list",
+      url:
+        `https://partners.ulka.tv/api/railtel.php/v1/bouque/list` +
+        `?expand=${expand}` +
+        `&filter[operator_id]=${OPERATOR_ID}` +
+        `&per-page=5000` +
+        `&vr=railtel1.1`,
+    },
+
+    // 3. index.php + operator-bouque (browser verified, but channelapi may 403)
+    {
+      name: "index-operator-bouque",
+      url:
+        `https://partners.ulka.tv/api/index.php/v1/operator-bouque` +
+        `?expand=${expand}` +
+        `&filter[operator_id]=${OPERATOR_ID}` +
+        `&per-page=5000` +
+        `&vr=web1.0`,
+    },
+  ];
+};
 
 // ======================================================
 // CACHE
 // ======================================================
-
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000;
 
 interface BouquetCache {
   data: unknown[];
   timestamp: number;
+  source: string;
 }
 
-const globalForUlka =
-  globalThis as typeof globalThis & {
-    __ulkaBouquetCache?: BouquetCache;
-  };
+const globalForUlka = globalThis as typeof globalThis & {
+  __ulkaBouquetCacheV3?: BouquetCache;
+};
 
 // ======================================================
-// GET
+// FETCH ONE ENDPOINT
 // ======================================================
 
-export async function GET(request: NextRequest) {
-  const startedAt = Date.now();
+interface FetchResult {
+  ok: boolean;
+  status: number;
+  items: Record<string, unknown>[];
+  message?: string;
+}
+
+async function tryEndpoint(
+  endpoint: EndpointDef,
+  authorization: string
+): Promise<FetchResult> {
+  console.log(`[Bouquet] Trying: ${endpoint.name}`);
+  console.log(`[Bouquet] URL: ${endpoint.url}`);
 
   try {
-    console.log("========================================");
-    console.log("ULKA BOUQUET API START");
-    console.log("========================================");
-
-    // --------------------------------------------------
-    // CACHE CHECK
-    // --------------------------------------------------
-
-    const cached = globalForUlka.__ulkaBouquetCache;
-
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log("Returning bouquets from CACHE:", cached.data.length);
-
-      return NextResponse.json(
-        {
-          success: true,
-          status: 200,
-          count: cached.data.length,
-          data: cached.data,
-          cached: true,
-        },
-        { status: 200 }
-      );
-    }
-
-    // --------------------------------------------------
-    // AUTHORIZATION (user's Bearer token)
-    // --------------------------------------------------
-
-    const authorization = request.headers.get("authorization");
-
-    if (!authorization) {
-      console.error("Authorization header missing");
-
-      return NextResponse.json(
-        {
-          success: false,
-          status: 401,
-          message:
-            "ULKA access token is missing. Please login again.",
-        },
-        { status: 401 }
-      );
-    }
-
-    console.log("Authorization received: true");
-
-    // --------------------------------------------------
-    // BUILD URL (exact same as working browser URL)
-    // --------------------------------------------------
-
-    const url =
-      `${ULKA_BOUQUET_URL}` +
-      `?expand=boxtype_lbl,type_lbl,status_lbl,created_by_lbl` +
-      `&filter[operator_id]=${OPERATOR_ID}` +
-      `&vr=web1.0`;
-
-    console.log("Calling ULKA bouquet API...");
-    console.log(url);
-
-    // --------------------------------------------------
-    // FETCH
-    // --------------------------------------------------
-
-    const response = await fetch(url, {
+    const response = await fetch(endpoint.url, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -970,45 +111,70 @@ export async function GET(request: NextRequest) {
 
     const responseText = await response.text();
 
-    console.log("ULKA bouquet API status:", response.status);
+    console.log(
+      `[Bouquet] ${endpoint.name} status:`,
+      response.status,
+      "body (first 300):",
+      responseText.slice(0, 300)
+    );
 
     // --------------------------------------------------
-    // ERROR HANDLING
+    // NON-2XX
     // --------------------------------------------------
-
     if (!response.ok) {
-      throw new Error(
-        `ULKA bouquet API failed with status ${response.status}: ${responseText.slice(
-          0,
-          200
-        )}`
-      );
+      let errMsg = responseText;
+      try {
+        const errJson = JSON.parse(responseText);
+        errMsg =
+          errJson?.data?.message ||
+          errJson?.message ||
+          responseText;
+      } catch {
+        /* keep raw */
+      }
+
+      return {
+        ok: false,
+        status: response.status,
+        items: [],
+        message: errMsg.slice(0, 300),
+      };
     }
 
-    let result: {
+    // --------------------------------------------------
+    // PARSE JSON
+    // --------------------------------------------------
+    let parsed: {
       success?: boolean;
       data?: unknown;
       message?: string;
     };
 
     try {
-      result = JSON.parse(responseText);
+      parsed = JSON.parse(responseText);
     } catch {
-      throw new Error("ULKA bouquet API returned invalid JSON");
+      return {
+        ok: false,
+        status: response.status,
+        items: [],
+        message: "Invalid JSON response",
+      };
     }
 
-    if (result.success !== true) {
-      throw new Error(
-        result.message || "ULKA bouquet API returned an error"
-      );
+    if (parsed.success !== true) {
+      return {
+        ok: false,
+        status: response.status,
+        items: [],
+        message: parsed.message || "API returned success=false",
+      };
     }
 
     // --------------------------------------------------
     // EXTRACT ARRAY
     // --------------------------------------------------
-
-    const items = Array.isArray(result.data)
-      ? result.data.filter(
+    const items = Array.isArray(parsed.data)
+      ? parsed.data.filter(
           (item): item is Record<string, unknown> =>
             typeof item === "object" &&
             item !== null &&
@@ -1016,34 +182,133 @@ export async function GET(request: NextRequest) {
         )
       : [];
 
-    console.log("TOTAL BOUQUETS:", items.length);
-
-    // --------------------------------------------------
-    // SAVE CACHE
-    // --------------------------------------------------
-
-    globalForUlka.__ulkaBouquetCache = {
-      data: items,
-      timestamp: Date.now(),
+    return {
+      ok: true,
+      status: response.status,
+      items,
     };
+  } catch (error: unknown) {
+    return {
+      ok: false,
+      status: 0,
+      items: [],
+      message:
+        error instanceof Error ? error.message : "Unknown fetch error",
+    };
+  }
+}
 
-    console.log(
-      `Total bouquet API time: ${Date.now() - startedAt}ms`
-    );
+// ======================================================
+// GET
+// ======================================================
 
+export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
+
+  try {
     console.log("========================================");
-    console.log("ULKA BOUQUET API END");
+    console.log("ULKA BOUQUET API START (operator_id=3021)");
     console.log("========================================");
 
-    return NextResponse.json(
-      {
-        success: true,
-        status: 200,
-        count: items.length,
-        data: items,
-        cached: false,
-      },
-      { status: 200 }
+    // --------------------------------------------------
+    // CACHE
+    // --------------------------------------------------
+    const cached = globalForUlka.__ulkaBouquetCacheV3;
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(
+        `Returning bouquets from CACHE (${cached.source}):`,
+        cached.data.length
+      );
+      return NextResponse.json(
+        {
+          success: true,
+          status: 200,
+          operator_id: OPERATOR_ID,
+          count: cached.data.length,
+          data: cached.data,
+          source: cached.source,
+          cached: true,
+        },
+        { status: 200 }
+      );
+    }
+
+    // --------------------------------------------------
+    // AUTH
+    // --------------------------------------------------
+    const authorization = request.headers.get("authorization");
+    if (!authorization) {
+      return NextResponse.json(
+        {
+          success: false,
+          status: 401,
+          message: "ULKA access token is missing. Please login again.",
+        },
+        { status: 401 }
+      );
+    }
+
+    // --------------------------------------------------
+    // TRY ENDPOINTS SEQUENTIALLY (first success wins)
+    // --------------------------------------------------
+    const endpoints = buildEndpoints();
+    const failures: Array<{ name: string; status: number; message?: string }> =
+      [];
+
+    for (const endpoint of endpoints) {
+      const result = await tryEndpoint(endpoint, authorization);
+
+      if (result.ok) {
+        console.log(
+          `✅ ${endpoint.name} SUCCESS — ${result.items.length} bouquets`
+        );
+
+        // Save cache
+        globalForUlka.__ulkaBouquetCacheV3 = {
+          data: result.items,
+          timestamp: Date.now(),
+          source: endpoint.name,
+        };
+
+        console.log(
+          `Total time: ${Date.now() - startedAt}ms | Source: ${endpoint.name}`
+        );
+        console.log("========================================");
+
+        return NextResponse.json(
+          {
+            success: true,
+            status: 200,
+            operator_id: OPERATOR_ID,
+            count: result.items.length,
+            data: result.items,
+            source: endpoint.name,
+            cached: false,
+          },
+          { status: 200 }
+        );
+      }
+
+      // Failure — log and continue
+      console.warn(
+        `❌ ${endpoint.name} FAILED (status ${result.status}): ${result.message}`
+      );
+      failures.push({
+        name: endpoint.name,
+        status: result.status,
+        message: result.message,
+      });
+    }
+
+    // --------------------------------------------------
+    // ALL FAILED
+    // --------------------------------------------------
+    const summary = failures
+      .map((f) => `${f.name} → ${f.status} ${f.message || ""}`)
+      .join(" | ");
+
+    throw new Error(
+      `All bouquet endpoints failed for operator_id=${OPERATOR_ID}. ${summary}`
     );
   } catch (error: unknown) {
     console.error("Bouquet API Error:", error);
@@ -1057,7 +322,9 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         status: 500,
+        operator_id: OPERATOR_ID,
         message,
+        data: null,
       },
       { status: 500 }
     );
