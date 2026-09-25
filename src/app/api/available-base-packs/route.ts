@@ -8,7 +8,6 @@ export async function GET(request: Request) {
   const brandId = searchParams.get("brand_id");
   const token = request.headers.get("authorization")?.replace("Bearer ", "");
 
-  // ✅ Only account_id and token required
   if (!accountId || !token) {
     return NextResponse.json(
       { success: false, message: "Missing account_id or token" },
@@ -17,16 +16,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // ✅ Base packs master list
     let url = `${ULKA_API_URL}/bouque/list?fields=id,name,description,mrp,rate&expand=type_lbl,boxtype_lbl&filter[type]=1&filter[is_online_app]=1`;
-
-    // ✅ notfilter uses ACCOUNT ID (50556), not subscriberId
     url += `&notfilter[account_id]=${accountId}`;
-
-    // ✅ Optional brand filter
-    if (brandId) {
-      url += `&filter[brand_id]=${brandId}`;
-    }
+    if (brandId) url += `&filter[brand_id]=${brandId}`;
 
     console.log("[available-base-packs] URL:", url);
 
