@@ -1,18 +1,661 @@
+// // PageBouquetspage.tsx
+// "use client";
+
+// import React, { useEffect, useMemo, useState } from "react";
+// import Image from "next/image";
+// import { FaSearch } from "react-icons/fa";
+// import { ULKA_TOKEN } from "../../lib/ulkaToken";
+
+// // ======================================================
+// // TYPES  (unchanged)
+// // ======================================================
+// interface Logo { name?: string; type?: string; ext?: string; data?: string; }
+// interface Language { id?: number; name?: string; label?: string; }
+// interface Genre { id?: number; name?: string; label?: string; }
+// interface Broadcaster { id?: number; name?: string; label?: string; }
+
+// interface Channel {
+//   id: number;
+//   code: string;
+//   name: string;
+//   broadcaster_id?: number;
+//   broadcaster_lbl?: string | Broadcaster;
+//   genre_id?: number;
+//   genre_lbl?: string | Genre;
+//   language_id?: number | number[];
+//   language_lbl?: string | string[] | Language | Language[];
+//   channel_type_lbl?: string;
+//   isHD?: number;
+//   isAlacarte?: number;
+//   isFta?: number;
+//   isNCF?: number;
+//   isAlacarte_lbl?: string;
+//   status_lbl?: string;
+//   isFta_lbl?: string;
+//   isNCF_lbl?: string;
+//   status?: number;
+//   description?: string;
+//   logo?: Logo | null;
+//   broadcasterRate?: string;
+//   drp?: string;
+//   revenue_share?: { mso_share?: number; mso_discount?: number; broadcaster_share?: number; };
+//   lcn_code?: string | null;
+//   created_at?: string;
+//   updated_at?: string;
+// }
+
+// interface Rate { id: number; months: number; drp: string; }
+// interface BouqueItem { id: number; name: string; type_lbl: string; rate: Rate[]; type?: number | string; }
+
+// interface ChannelApiResult {
+//   success?: boolean;
+//   status?: number;
+//   message?: string;
+//   data?: Channel[];
+// }
+
+// interface BouquetApiResult {
+//   success?: boolean;
+//   status?: number;
+//   message?: string;
+//   data?: BouqueItem[];
+// }
+
+// // ======================================================
+// // TABS
+// // ======================================================
+// const tabs = ["Channels", "Broadcaster Packs", "Ulka Bouquets"];
+
+// const typeMapping: Record<string, string> = {
+//   "Broadcaster Packs": "Add On",
+//   "Ulka Bouquets": "Base",
+// };
+
+// // ======================================================
+// // NORMALIZE HELPERS (unchanged)
+// // ======================================================
+// const normalizeLanguage = (value: string): string => value.trim();
+// const normalizeGenre = (value: string): string => {
+//   const genre = value.trim().toLowerCase();
+//   const mapping: Record<string, string> = {
+//     entertainment: "Entertainment",
+//     kids: "Kids",
+//     kid: "Kids",
+//     movies: "Movies",
+//     movie: "Movies",
+//     news: "News",
+//     sports: "Sports",
+//     sport: "Sports",
+//     music: "Music",
+//     comedy: "Comedy",
+//     lifestyle: "LifeStyle",
+//     "life style": "LifeStyle",
+//     spiritual: "Spiritual",
+//     spirituality: "Spiritual",
+//     infotainment: "Infotainment",
+//   };
+//   return mapping[genre] || value.trim();
+// };
+
+// const getLanguageName = (channel: Channel): string => {
+//   const value = channel.language_lbl;
+//   if (!value) return "";
+//   if (typeof value === "string") return value;
+//   if (Array.isArray(value)) {
+//     if (value.length === 0) return "";
+//     const first = value[0];
+//     if (typeof first === "string") return first;
+//     return first?.name || first?.label || "";
+//   }
+//   if (typeof value === "object") return value.name || value.label || "";
+//   return "";
+// };
+
+// const getGenreName = (channel: Channel): string => {
+//   const value = channel.genre_lbl;
+//   if (!value) return "";
+//   if (typeof value === "string") return value;
+//   if (Array.isArray(value)) {
+//     if (value.length === 0) return "";
+//     const first = value[0];
+//     if (typeof first === "string") return first;
+//     return first?.name || first?.label || "";
+//   }
+//   if (typeof value === "object") return value.name || value.label || "";
+//   return "";
+// };
+
+// const getChannelMrp = (channel: Channel): string => {
+//   const mrp = channel.broadcasterRate;
+//   if (mrp === undefined || mrp === null || mrp === "") return "";
+//   const numericMrp = Number(mrp);
+//   if (!Number.isNaN(numericMrp)) return numericMrp.toFixed(0);
+//   return String(mrp);
+// };
+
+// const getLogoUrl = (channel: Channel): string => {
+//   const logo = channel.logo;
+//   if (!logo) return "/placeholder.png";
+//   if (typeof logo !== "object") return "/placeholder.png";
+//   if (!logo.data || typeof logo.data !== "string") return "/placeholder.png";
+//   if (logo.data.startsWith("data:image/")) return logo.data;
+//   return `data:${logo.type || "image/png"};base64,${logo.data}`;
+// };
+
+// // ======================================================
+// // FETCH WITH HARDCODED TOKEN
+// // ======================================================
+// const authHeaders = {
+//   Accept: "application/json",
+//   Authorization: `Bearer ${ULKA_TOKEN}`,
+// };
+
+// const fetchChannels = async (): Promise<Channel[]> => {
+//   const response = await fetch("/api/ulka/channels", {
+//     method: "GET",
+//     headers: authHeaders,
+//     cache: "no-store",
+//   });
+
+//   const result = (await response.json()) as ChannelApiResult;
+
+//   if (!response.ok || result.success !== true) {
+//     throw new Error(
+//       result.message || `Failed to fetch channels (${response.status})`
+//     );
+//   }
+
+//   if (!Array.isArray(result.data)) return [];
+//   return result.data;
+// };
+
+// const fetchBouqueData = async (): Promise<BouqueItem[]> => {
+//   const response = await fetch("/api/ulka/bouquets", {
+//     method: "GET",
+//     headers: authHeaders,
+//     cache: "no-store",
+//   });
+
+//   const result = (await response.json()) as BouquetApiResult;
+
+//   if (!response.ok || result.success !== true) {
+//     throw new Error(
+//       result.message || `Failed to fetch bouquet data (${response.status})`
+//     );
+//   }
+
+//   if (!Array.isArray(result.data)) return [];
+//   return result.data;
+// };
+
+// // ======================================================
+// // MAIN COMPONENT
+// // ======================================================
+// const BouquePage = () => {
+//   const [selectedTab, setSelectedTab] = useState("Channels");
+//   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+//   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+
+//   const [channels, setChannels] = useState<Channel[]>([]);
+//   const [bouqueData, setBouqueData] = useState<BouqueItem[]>([]);
+
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [showAllChannels, setShowAllChannels] = useState(false);
+
+//   const [loadingChannels, setLoadingChannels] = useState(true);
+//   const [loadingBouquets, setLoadingBouquets] = useState(true);
+
+//   const [channelError, setChannelError] = useState<string | null>(null);
+//   const [bouquetError, setBouquetError] = useState<string | null>(null);
+
+//   // ==================================================
+//   // LOAD DATA DIRECTLY (No cache, no login check)
+//   // ==================================================
+//   useEffect(() => {
+//     let mounted = true;
+
+//     const loadData = async () => {
+//       const [channelResult, bouquetResult] = await Promise.allSettled([
+//         fetchChannels(),
+//         fetchBouqueData(),
+//       ]);
+
+//       if (!mounted) return;
+
+//       if (channelResult.status === "fulfilled") {
+//         setChannels(channelResult.value);
+//         setChannelError(null);
+//       } else {
+//         setChannels([]);
+//         setChannelError(
+//           channelResult.reason instanceof Error
+//             ? channelResult.reason.message
+//             : "Failed to load ULKA channels"
+//         );
+//       }
+//       setLoadingChannels(false);
+
+//       if (bouquetResult.status === "fulfilled") {
+//         setBouqueData(bouquetResult.value);
+//         setBouquetError(null);
+//       } else {
+//         setBouqueData([]);
+//         setBouquetError(
+//           bouquetResult.reason instanceof Error
+//             ? bouquetResult.reason.message
+//             : "Failed to load ULKA bouquets"
+//         );
+//       }
+//       setLoadingBouquets(false);
+//     };
+
+//     void loadData();
+//     return () => {
+//       mounted = false;
+//     };
+//   }, []);
+
+//   // ==================================================
+//   // DYNAMIC LANGUAGES
+//   // ==================================================
+//   const categories = useMemo(() => {
+//     const list = channels
+//       .map((c) => {
+//         const lang = getLanguageName(c);
+//         return lang ? normalizeLanguage(lang) : "";
+//       })
+//       .filter(Boolean);
+//     return Array.from(new Set(list)).sort((a, b) => a.localeCompare(b));
+//   }, [channels]);
+
+//   // ==================================================
+//   // DYNAMIC GENRES
+//   // ==================================================
+//   const dynamicSubcategories = useMemo(() => {
+//     if (!selectedCategory) return [];
+//     const genres = channels
+//       .filter(
+//         (c) =>
+//           normalizeLanguage(getLanguageName(c)).toLowerCase() ===
+//           selectedCategory.toLowerCase()
+//       )
+//       .map((c) => normalizeGenre(getGenreName(c)))
+//       .filter(Boolean);
+//     return Array.from(new Set(genres)).sort((a, b) => a.localeCompare(b));
+//   }, [channels, selectedCategory]);
+
+//   const handleCategoryClick = (category: string) => {
+//     if (selectedCategory === category) {
+//       setSelectedCategory(null);
+//       setSelectedSubcategory(null);
+//       setShowAllChannels(false);
+//       return;
+//     }
+//     setSelectedCategory(category);
+//     setSelectedSubcategory(null);
+//     setShowAllChannels(false);
+//   };
+
+//   const handleSubcategoryClick = (subcategory: string) => {
+//     setSelectedSubcategory(
+//       selectedSubcategory === subcategory ? null : subcategory
+//     );
+//     setShowAllChannels(false);
+//   };
+
+//   // ==================================================
+//   // FILTER CHANNELS
+//   // ==================================================
+//   const filteredChannels = useMemo(() => {
+//     if (!selectedCategory) return [];
+//     const query = searchQuery.trim().toLowerCase();
+
+//     return channels.filter((channel) => {
+//       const languageName = normalizeLanguage(getLanguageName(channel));
+//       if (languageName.toLowerCase() !== selectedCategory.toLowerCase())
+//         return false;
+
+//       if (selectedSubcategory) {
+//         const genreName = normalizeGenre(getGenreName(channel));
+//         if (genreName.toLowerCase() !== selectedSubcategory.toLowerCase())
+//           return false;
+//       }
+
+//       if (query) {
+//         const nameMatch = channel.name?.toLowerCase().includes(query);
+//         const codeMatch = channel.code?.toLowerCase().includes(query);
+//         if (!nameMatch && !codeMatch) return false;
+//       }
+
+//       if (channel.status !== undefined && channel.status !== 1) return false;
+//       return true;
+//     });
+//   }, [channels, selectedCategory, selectedSubcategory, searchQuery]);
+
+//   // ==================================================
+//   // FILTER BOUQUETS
+//   // ==================================================
+//   const filteredBouqueData = useMemo(() => {
+//     const expectedType = typeMapping[selectedTab];
+//     if (!expectedType) return [];
+
+//     const required = expectedType.toLowerCase().replace(/\s+/g, "");
+//     const query = searchQuery.trim().toLowerCase();
+
+//     return bouqueData.filter((item) => {
+//       const actual = item.type_lbl?.toLowerCase().replace(/\s+/g, "");
+//       const typeMatch = actual === required;
+//       const searchMatch = !query || item.name?.toLowerCase().includes(query);
+//       return typeMatch && searchMatch;
+//     });
+//   }, [bouqueData, selectedTab, searchQuery]);
+
+//   const handleTabChange = (tab: string) => {
+//     setSelectedTab(tab);
+//     setSearchQuery("");
+//     setShowAllChannels(false);
+//     if (tab !== "Channels") {
+//       setSelectedCategory(null);
+//       setSelectedSubcategory(null);
+//     }
+//   };
+
+//   // ==================================================
+//   // RENDER
+//   // ==================================================
+//   return (
+//     <div className="p-4 sm:p-10 md:p-20 mt-[2rem] bg-white text-black min-h-screen">
+//       {/* HEADER */}
+//       <div className="text-center mb-8">
+//         <h1 className="text-2xl font-bold mb-4">Ulka Subscription Plans</h1>
+//         <p className="text-gray-600 mb-6">
+//           View all channels and broadcaster packs available on ULKA TV
+//         </p>
+
+//         <div className="flex flex-wrap justify-center gap-4">
+//           {tabs.map((tab) => (
+//             <button
+//               key={tab}
+//               type="button"
+//               onClick={() => handleTabChange(tab)}
+//               className={`px-6 py-3 rounded-md font-medium transition ${
+//                 selectedTab === tab
+//                   ? "bg-black text-white"
+//                   : "bg-red-500 text-black hover:bg-red-600"
+//               }`}
+//             >
+//               {tab}
+//             </button>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* CHANNELS TAB */}
+//       {selectedTab === "Channels" && (
+//         <div className="flex flex-col items-center mt-10">
+//           {loadingChannels && (
+//             <div className="py-10 text-gray-600">Loading channels...</div>
+//           )}
+
+//           {!loadingChannels && channelError && (
+//             <div className="w-full max-w-5xl mb-6 rounded-md border border-red-300 bg-red-50 p-5 text-red-700">
+//               <p className="font-semibold">Failed to load ULKA channels</p>
+//               <p className="text-sm mt-1">{channelError}</p>
+//             </div>
+//           )}
+
+//           {!loadingChannels && !channelError && channels.length === 0 && (
+//             <div className="py-10 text-gray-500">
+//               No channels returned by ULKA.
+//             </div>
+//           )}
+
+//           {channels.length > 0 &&
+//             categories.map((category) => (
+//               <div key={category} className="w-full max-w-8xl mb-4">
+//                 <button
+//                   type="button"
+//                   onClick={() => handleCategoryClick(category)}
+//                   className={`w-full flex justify-between items-center px-4 py-4 text-sm font-medium rounded-md transition ${
+//                     selectedCategory === category
+//                       ? "bg-black text-white"
+//                       : "bg-gray-200 text-black hover:bg-gray-300"
+//                   }`}
+//                 >
+//                   <span>{category}</span>
+//                   <span className="text-xl font-bold">
+//                     {selectedCategory === category ? "−" : "+"}
+//                   </span>
+//                 </button>
+
+//                 {selectedCategory === category && (
+//                   <>
+//                     <div className="flex flex-wrap items-center gap-2 mt-4 px-4">
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setSelectedSubcategory(null);
+//                           setShowAllChannels(false);
+//                         }}
+//                         className={`px-4 py-2 text-[15px] rounded-md border ${
+//                           selectedSubcategory === null
+//                             ? "bg-red-600 text-white"
+//                             : "bg-gray-100 text-black hover:bg-gray-200"
+//                         }`}
+//                       >
+//                         All
+//                       </button>
+
+//                       {dynamicSubcategories.map((genre) => (
+//                         <button
+//                           key={genre}
+//                           type="button"
+//                           onClick={() => handleSubcategoryClick(genre)}
+//                           className={`px-4 py-2 text-[15px] rounded-md border ${
+//                             selectedSubcategory === genre
+//                               ? "bg-red-600 text-white"
+//                               : "bg-gray-100 text-black hover:bg-gray-200"
+//                           }`}
+//                         >
+//                           {genre}
+//                         </button>
+//                       ))}
+
+//                       <div className="relative flex-grow max-w-sm ml-auto">
+//                         <FaSearch className="absolute left-3 top-3 text-black" />
+//                         <input
+//                           type="text"
+//                           placeholder="Search channels..."
+//                           value={searchQuery}
+//                           onChange={(e) => {
+//                             setSearchQuery(e.target.value);
+//                             setShowAllChannels(false);
+//                           }}
+//                           className="w-full p-2 pl-10 border rounded-md outline-none focus:ring-2 focus:ring-black"
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <div className="mt-3 p-4 bg-white rounded-md border border-gray-200">
+//                       <div className="mb-4 text-sm text-gray-600">
+//                         Showing <strong>{filteredChannels.length}</strong>{" "}
+//                         channels for <strong>{selectedCategory}</strong>
+//                         {selectedSubcategory && (
+//                           <>
+//                             {" / "}
+//                             <strong>{selectedSubcategory}</strong>
+//                           </>
+//                         )}
+//                       </div>
+
+//                       {filteredChannels.length === 0 && (
+//                         <div className="text-center py-10 text-gray-500">
+//                           No channels found.
+//                         </div>
+//                       )}
+
+//                       {filteredChannels.length > 0 && (
+//                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+//                           {(showAllChannels
+//                             ? filteredChannels
+//                             : filteredChannels.slice(0, 14)
+//                           ).map((channel) => (
+//                             <div
+//                               key={channel.id}
+//                               className="text-center border p-3 rounded-md bg-gray-50 hover:shadow-md transition"
+//                             >
+//                               <Image
+//                                 src={getLogoUrl(channel)}
+//                                 alt={channel.name || "Channel logo"}
+//                                 width={100}
+//                                 height={65}
+//                                 unoptimized
+//                                 className="mx-auto w-[100px] h-[65px] object-contain"
+//                                 onError={(e) => {
+//                                   e.currentTarget.src = "/placeholder.png";
+//                                 }}
+//                               />
+//                               <p className="mt-2 text-sm font-semibold">
+//                                 {channel.name}
+//                               </p>
+//                               {getChannelMrp(channel) && (
+//                                 <p className="mt-2 text-sm font-semibold text-green-700">
+//                                   MRP: ₹{getChannelMrp(channel)} / m
+//                                 </p>
+//                               )}
+//                             </div>
+//                           ))}
+//                         </div>
+//                       )}
+
+//                       {filteredChannels.length > 14 && (
+//                         <div className="mt-6 text-center">
+//                           <button
+//                             type="button"
+//                             onClick={() =>
+//                               setShowAllChannels(!showAllChannels)
+//                             }
+//                             className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+//                           >
+//                             {showAllChannels
+//                               ? "Show Less"
+//                               : `Read More (${
+//                                   filteredChannels.length - 14
+//                                 } more)`}
+//                           </button>
+//                         </div>
+//                       )}
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             ))}
+//         </div>
+//       )}
+
+//       {/* BOUQUETS TAB */}
+//       {["Broadcaster Packs", "Ulka Bouquets"].includes(selectedTab) && (
+//         <div className="mt-10">
+//           <div className="relative w-full max-w-8xl mx-auto mb-8">
+//             <FaSearch className="absolute left-3 top-3 text-black" />
+//             <input
+//               type="text"
+//               placeholder="Search bouquet..."
+//               value={searchQuery}
+//               onChange={(e) => setSearchQuery(e.target.value)}
+//               className="w-full p-2 pl-10 border rounded-md outline-none focus:ring-2 focus:ring-black"
+//             />
+//           </div>
+
+//           {loadingBouquets && (
+//             <div className="text-center py-10 text-gray-600">
+//               Loading plans...
+//             </div>
+//           )}
+
+//           {!loadingBouquets && bouquetError && (
+//             <div className="max-w-5xl mx-auto mb-6 rounded-md border border-red-300 bg-red-50 p-5 text-red-700">
+//               <p className="font-semibold">Failed to load ULKA plans</p>
+//               <p className="text-sm mt-1">{bouquetError}</p>
+//             </div>
+//           )}
+
+//           {!loadingBouquets && !bouquetError && (
+//             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6">
+//               {filteredBouqueData.map((item) => (
+//                 <div
+//                   key={item.id}
+//                   className={`p-4 border rounded-md text-center hover:shadow-md transition ${
+//                     selectedTab === "Broadcaster Packs"
+//                       ? "bg-blue-100"
+//                       : "bg-red-100"
+//                   }`}
+//                 >
+//                   <p className="font-semibold mb-2">{item.name}</p>
+//                   {item.type_lbl && (
+//                     <p className="text-xs text-gray-500 mb-2">
+//                       {item.type_lbl}
+//                     </p>
+//                   )}
+//                   {item.rate?.length > 0 && (
+//                     <p className="text-sm text-gray-700">
+//                       MRP: ₹{Number(item.rate[0].drp).toFixed(0)} / m
+//                     </p>
+//                   )}
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+
+//           {!loadingBouquets &&
+//             !bouquetError &&
+//             filteredBouqueData.length === 0 && (
+//               <div className="text-center py-10 text-gray-500">
+//                 No plans found.
+//               </div>
+//             )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default BouquePage;
+
+
+
 // PageBouquetspage.tsx
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import { FaSearch } from "react-icons/fa";
 import { ULKA_TOKEN } from "../../lib/ulkaToken";
 
 // ======================================================
-// TYPES  (unchanged)
+// TYPES
 // ======================================================
-interface Logo { name?: string; type?: string; ext?: string; data?: string; }
-interface Language { id?: number; name?: string; label?: string; }
-interface Genre { id?: number; name?: string; label?: string; }
-interface Broadcaster { id?: number; name?: string; label?: string; }
+interface Logo {
+  name?: string;
+  type?: string;
+  ext?: string;
+  data?: string;
+}
+interface Language {
+  id?: number;
+  name?: string;
+  label?: string;
+}
+interface Genre {
+  id?: number;
+  name?: string;
+  label?: string;
+}
+interface Broadcaster {
+  id?: number;
+  name?: string;
+  label?: string;
+}
 
 interface Channel {
   id: number;
@@ -38,14 +681,28 @@ interface Channel {
   logo?: Logo | null;
   broadcasterRate?: string;
   drp?: string;
-  revenue_share?: { mso_share?: number; mso_discount?: number; broadcaster_share?: number; };
+  revenue_share?: {
+    mso_share?: number;
+    mso_discount?: number;
+    broadcaster_share?: number;
+  };
   lcn_code?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
-interface Rate { id: number; months: number; drp: string; }
-interface BouqueItem { id: number; name: string; type_lbl: string; rate: Rate[]; type?: number | string; }
+interface Rate {
+  id: number;
+  months: number;
+  drp: string;
+}
+interface BouqueItem {
+  id: number;
+  name: string;
+  type_lbl: string;
+  rate: Rate[];
+  type?: number | string;
+}
 
 interface ChannelApiResult {
   success?: boolean;
@@ -72,9 +729,10 @@ const typeMapping: Record<string, string> = {
 };
 
 // ======================================================
-// NORMALIZE HELPERS (unchanged)
+// NORMALIZE HELPERS
 // ======================================================
 const normalizeLanguage = (value: string): string => value.trim();
+
 const normalizeGenre = (value: string): string => {
   const genre = value.trim().toLowerCase();
   const mapping: Record<string, string> = {
@@ -143,13 +801,54 @@ const getLogoUrl = (channel: Channel): string => {
 };
 
 // ======================================================
-// FETCH WITH HARDCODED TOKEN
+// AUTH HEADERS
 // ======================================================
 const authHeaders = {
   Accept: "application/json",
   Authorization: `Bearer ${ULKA_TOKEN}`,
 };
 
+// ======================================================
+// CACHE — 10 min TTL in sessionStorage
+// ======================================================
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const getCached = <T,>(key: string): T | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CacheEntry<T>;
+    if (Date.now() - parsed.timestamp > CACHE_TTL) {
+      sessionStorage.removeItem(key);
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
+const setCache = <T,>(key: string, data: T): void => {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(
+      key,
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // silent — cache is optional
+  }
+};
+
+// ======================================================
+// FETCH FUNCTIONS
+// ======================================================
 const fetchChannels = async (): Promise<Channel[]> => {
   const response = await fetch("/api/ulka/channels", {
     method: "GET",
@@ -194,7 +893,9 @@ const fetchBouqueData = async (): Promise<BouqueItem[]> => {
 const BouquePage = () => {
   const [selectedTab, setSelectedTab] = useState("Channels");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    null
+  );
 
   const [channels, setChannels] = useState<Channel[]>([]);
   const [bouqueData, setBouqueData] = useState<BouqueItem[]>([]);
@@ -202,6 +903,7 @@ const BouquePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllChannels, setShowAllChannels] = useState(false);
 
+  // ✅ Separate loading flags — each resolves independently
   const [loadingChannels, setLoadingChannels] = useState(true);
   const [loadingBouquets, setLoadingBouquets] = useState(true);
 
@@ -209,47 +911,69 @@ const BouquePage = () => {
   const [bouquetError, setBouquetError] = useState<string | null>(null);
 
   // ==================================================
-  // LOAD DATA DIRECTLY (No cache, no login check)
+  // ✅ OPTIMIZED: Independent loads + cache
   // ==================================================
   useEffect(() => {
     let mounted = true;
 
-    const loadData = async () => {
-      const [channelResult, bouquetResult] = await Promise.allSettled([
-        fetchChannels(),
-        fetchBouqueData(),
-      ]);
-
-      if (!mounted) return;
-
-      if (channelResult.status === "fulfilled") {
-        setChannels(channelResult.value);
-        setChannelError(null);
-      } else {
-        setChannels([]);
-        setChannelError(
-          channelResult.reason instanceof Error
-            ? channelResult.reason.message
-            : "Failed to load ULKA channels"
-        );
+    // ─── 1. BOUQUETS FIRST (fast — smaller payload) ───
+    const loadBouquets = async () => {
+      // Check cache first
+      const cached = getCached<BouqueItem[]>("ulka_bouquets");
+      if (cached && cached.length > 0) {
+        setBouqueData(cached);
+        setLoadingBouquets(false);
+        return;
       }
-      setLoadingChannels(false);
 
-      if (bouquetResult.status === "fulfilled") {
-        setBouqueData(bouquetResult.value);
+      try {
+        const data = await fetchBouqueData();
+        if (!mounted) return;
+        setBouqueData(data);
         setBouquetError(null);
-      } else {
+        setCache("ulka_bouquets", data);
+      } catch (err) {
+        if (!mounted) return;
         setBouqueData([]);
         setBouquetError(
-          bouquetResult.reason instanceof Error
-            ? bouquetResult.reason.message
-            : "Failed to load ULKA bouquets"
+          err instanceof Error ? err.message : "Failed to load ULKA bouquets"
         );
+      } finally {
+        if (mounted) setLoadingBouquets(false);
       }
-      setLoadingBouquets(false);
     };
 
-    void loadData();
+    // ─── 2. CHANNELS SECOND (heavy — base64 logos) ───
+    const loadChannels = async () => {
+      // Check cache first
+      const cached = getCached<Channel[]>("ulka_channels");
+      if (cached && cached.length > 0) {
+        setChannels(cached);
+        setLoadingChannels(false);
+        return;
+      }
+
+      try {
+        const data = await fetchChannels();
+        if (!mounted) return;
+        setChannels(data);
+        setChannelError(null);
+        setCache("ulka_channels", data);
+      } catch (err) {
+        if (!mounted) return;
+        setChannels([]);
+        setChannelError(
+          err instanceof Error ? err.message : "Failed to load ULKA channels"
+        );
+      } finally {
+        if (mounted) setLoadingChannels(false);
+      }
+    };
+
+    // ✅ Fire both in parallel — but each updates UI as soon as it finishes
+    void loadBouquets();
+    void loadChannels();
+
     return () => {
       mounted = false;
     };
@@ -360,6 +1084,13 @@ const BouquePage = () => {
     }
   };
 
+  // ✅ Manual refresh (clears cache)
+  const handleRefresh = useCallback(() => {
+    sessionStorage.removeItem("ulka_channels");
+    sessionStorage.removeItem("ulka_bouquets");
+    window.location.reload();
+  }, []);
+
   // ==================================================
   // RENDER
   // ==================================================
@@ -394,13 +1125,22 @@ const BouquePage = () => {
       {selectedTab === "Channels" && (
         <div className="flex flex-col items-center mt-10">
           {loadingChannels && (
-            <div className="py-10 text-gray-600">Loading channels...</div>
+            <div className="py-10 text-gray-600 flex items-center gap-3">
+              <div className="w-5 h-5 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
+              Loading channels...
+            </div>
           )}
 
           {!loadingChannels && channelError && (
             <div className="w-full max-w-5xl mb-6 rounded-md border border-red-300 bg-red-50 p-5 text-red-700">
               <p className="font-semibold">Failed to load ULKA channels</p>
               <p className="text-sm mt-1">{channelError}</p>
+              <button
+                onClick={handleRefresh}
+                className="mt-3 text-xs font-bold text-red-700 underline"
+              >
+                Try again
+              </button>
             </div>
           )}
 
@@ -510,6 +1250,7 @@ const BouquePage = () => {
                                 width={100}
                                 height={65}
                                 unoptimized
+                                loading="lazy"
                                 className="mx-auto w-[100px] h-[65px] object-contain"
                                 onError={(e) => {
                                   e.currentTarget.src = "/placeholder.png";
@@ -568,7 +1309,8 @@ const BouquePage = () => {
           </div>
 
           {loadingBouquets && (
-            <div className="text-center py-10 text-gray-600">
+            <div className="text-center py-10 text-gray-600 flex items-center justify-center gap-3">
+              <div className="w-5 h-5 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
               Loading plans...
             </div>
           )}
@@ -577,6 +1319,12 @@ const BouquePage = () => {
             <div className="max-w-5xl mx-auto mb-6 rounded-md border border-red-300 bg-red-50 p-5 text-red-700">
               <p className="font-semibold">Failed to load ULKA plans</p>
               <p className="text-sm mt-1">{bouquetError}</p>
+              <button
+                onClick={handleRefresh}
+                className="mt-3 text-xs font-bold text-red-700 underline"
+              >
+                Try again
+              </button>
             </div>
           )}
 
