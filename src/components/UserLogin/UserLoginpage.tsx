@@ -14,10 +14,9 @@ import {
   Shield,
   Zap,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 
-const AUTH_KEY = "xqibzknznwb29de15s44";
+const AUTH_KEY = "xqibkznznwb29de15s44";
 
 interface ProfileAccount {
   id: string | number;
@@ -39,7 +38,6 @@ interface ProfileApiResponse {
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -48,7 +46,6 @@ const Login = () => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
-    setError("");
 
     try {
       // 1️⃣ LOGIN
@@ -66,7 +63,8 @@ const Login = () => {
         !loginData.success ||
         !loginData.data?.access_token
       ) {
-        setError(
+        console.error(
+          "[Login] Failed:",
           (typeof loginData.message === "string" && loginData.message) ||
             loginData.error ||
             "Invalid username or password."
@@ -143,7 +141,6 @@ const Login = () => {
       setTimeout(() => router.push("/dashboard"), 400);
     } catch (err) {
       console.error("Login Error:", err);
-      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -321,32 +318,6 @@ const Login = () => {
                 </button>
               </div>
             </div>
-
-            {/* Forgot password link */}
-            <div className="flex justify-end">
-              <a
-                href="/forgotpassword"
-                className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors"
-              >
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Error message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-                <AlertCircle
-                  size={18}
-                  className="text-red-600 shrink-0 mt-0.5"
-                />
-                <div>
-                  <p className="font-bold text-sm text-red-700">
-                    Login failed
-                  </p>
-                  <p className="text-xs text-red-600 mt-0.5">{error}</p>
-                </div>
-              </div>
-            )}
 
             {/* Submit button */}
             <button

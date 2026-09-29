@@ -8,7 +8,6 @@ import {
   Calendar,
   Check,
   Loader2,
-  Sparkles,
   Clock,
   IndianRupee,
   ChevronRight,
@@ -30,11 +29,14 @@ interface RechargePeriod {
   amount: number;
 }
 
+// ✅ Extended raw type — includes mrpAmount, mrpTotal
 interface RechargePeriodRaw {
   name?: string;
   months?: number | string;
   days?: number | string;
   amount?: number | string;
+  mrpTotal?: number | string;
+  mrpAmount?: number | string;
 }
 
 export default function RechargePeriodPage() {
@@ -47,7 +49,6 @@ export default function RechargePeriodPage() {
   const [statusMsg, setStatusMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // ✅ Rotating loading message
   const [loadingMsg, setLoadingMsg] = useState("Connecting to server...");
 
   // ==================================================
@@ -147,7 +148,16 @@ export default function RechargePeriodPage() {
           )
             .filter(([key]) => /^\d+$/.test(key))
             .map(([key, value]) => {
-              const amount = parseFloat(String(value?.amount ?? 0)) || 0;
+              // ✅ Use mrpAmount (final total incl. NCF)
+              const amount =
+                parseFloat(
+                  String(
+                    value?.mrpAmount ??
+                      value?.mrpTotal ??
+                      value?.amount ??
+                      0
+                  )
+                ) || 0;
               return {
                 id: key,
                 name: value?.name || "",
@@ -160,7 +170,15 @@ export default function RechargePeriodPage() {
 
           parsed.sort((a, b) => a.months - b.months);
 
-          console.log("[Recharge Period] FINAL (months only):", parsed);
+          console.log(
+            "[Recharge Period] FINAL (correct totals):",
+            parsed.map((p) => ({
+              id: p.id,
+              name: p.name,
+              months: p.months,
+              amount: p.amount,
+            }))
+          );
 
           setPeriods(parsed);
           if (parsed.length > 0) setSelectedId(parsed[0].id);
@@ -255,7 +273,6 @@ export default function RechargePeriodPage() {
   // ==================================================
   return (
     <>
-      {/* ═══════════ FULL-SCREEN LOADING OVERLAY ═══════════ */}
       {loading && (
         <div className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex items-center justify-center">
           <div className="flex flex-col items-center max-w-sm w-full px-6">
@@ -326,7 +343,7 @@ export default function RechargePeriodPage() {
 
       <div className="min-h-screen bg-white text-gray-900 pb-32">
         <div className="max-w-4xl mx-auto px-4 md:px-8 pt-10">
-          {/* ═══════════ BACK BUTTON ═══════════ */}
+          {/* BACK BUTTON */}
           <button
             onClick={() => router.back()}
             disabled={submitting}
@@ -341,16 +358,8 @@ export default function RechargePeriodPage() {
             Back
           </button>
 
-          {/* ═══════════ HERO HEADER ═══════════ */}
+          {/* HERO HEADER */}
           <div className="mb-8">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-sm shadow-red-200">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-red-600">
-                Step 2 of 2
-              </span>
-            </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
               Select <span className="text-red-600">Recharge Period</span>
             </h1>
@@ -359,7 +368,7 @@ export default function RechargePeriodPage() {
             </p>
           </div>
 
-          {/* ═══════════ PERIOD CARDS ═══════════ */}
+          {/* PERIOD CARDS */}
           {!loading && periods.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
               {periods.map((period) => {
@@ -378,7 +387,6 @@ export default function RechargePeriodPage() {
                         : "bg-white border-gray-100 hover:border-red-200 hover:shadow-md hover:shadow-red-50/60"
                     }`}
                   >
-                    {/* Top-right corner tag */}
                     {isSelected && (
                       <div className="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl">
                         Selected
@@ -386,7 +394,6 @@ export default function RechargePeriodPage() {
                     )}
 
                     <div className="flex items-center gap-3 mb-4">
-                      {/* Radio */}
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                           isSelected
@@ -399,7 +406,6 @@ export default function RechargePeriodPage() {
                         )}
                       </div>
 
-                      {/* Icon */}
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
@@ -429,7 +435,6 @@ export default function RechargePeriodPage() {
                       </div>
                     </div>
 
-                    {/* Divider */}
                     <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <IndianRupee
@@ -447,7 +452,7 @@ export default function RechargePeriodPage() {
                           isSelected ? "text-red-600" : "text-gray-900"
                         }`}
                       >
-                        ₹{period.amount.toFixed(0)}
+                        ₹{period.amount.toFixed(2)}
                       </p>
                     </div>
                   </button>
@@ -456,7 +461,7 @@ export default function RechargePeriodPage() {
             </div>
           )}
 
-          {/* ═══════════ EMPTY ═══════════ */}
+          {/* EMPTY */}
           {!loading && periods.length === 0 && !errorMsg && (
             <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-16 text-center">
               <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
@@ -471,7 +476,7 @@ export default function RechargePeriodPage() {
             </div>
           )}
 
-          {/* ═══════════ SUBMITTING STATUS ═══════════ */}
+          {/* SUBMITTING STATUS */}
           {submitting && statusMsg && (
             <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
               <Loader2
@@ -484,14 +489,14 @@ export default function RechargePeriodPage() {
             </div>
           )}
 
-          {/* ═══════════ ERROR ═══════════ */}
+          {/* ERROR */}
           {errorMsg && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 text-red-700 text-sm font-medium">
               {errorMsg}
             </div>
           )}
 
-          {/* ═══════════ DESKTOP PROCEED BUTTON ═══════════ */}
+          {/* DESKTOP PROCEED BUTTON */}
           <div className="hidden sm:block">
             <button
               onClick={handleContinue}
@@ -517,10 +522,9 @@ export default function RechargePeriodPage() {
           </div>
         </div>
 
-        {/* ═══════════ MOBILE BOTTOM BAR ═══════════ */}
+        {/* MOBILE BOTTOM BAR */}
         <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.3s_ease-out]">
           <div className="bg-black/95 backdrop-blur-md border-t border-red-500/30 shadow-[0_-8px_24px_rgba(0,0,0,0.4)] p-4">
-            {/* Selected summary */}
             {selectedPeriod && (
               <div className="mb-3 flex items-center justify-between">
                 <div className="min-w-0 flex-1 mr-3">
@@ -539,7 +543,7 @@ export default function RechargePeriodPage() {
                   </p>
                 </div>
                 <p className="text-red-400 font-black text-lg shrink-0">
-                  ₹{selectedPeriod.amount.toFixed(0)}
+                  ₹{selectedPeriod.amount.toFixed(2)}
                 </p>
               </div>
             )}

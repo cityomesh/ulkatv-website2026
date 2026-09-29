@@ -3,7 +3,17 @@
 
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Check, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import {
+  Check,
+  ArrowLeft,
+  Loader2,
+  AlertTriangle,
+  ShoppingCart,
+  Calendar,
+  ChevronRight,
+  IndianRupee,
+  Layers,
+} from "lucide-react";
 import UserHeader from "../../components/UserHeader";
 
 interface Pack {
@@ -21,21 +31,43 @@ interface RechargePeriod {
   total: number;
 }
 
-// ✅ Raw value shape from Ulka recharge-period API
 interface RechargePeriodRaw {
   name?: string;
   days?: number | string;
   mrpTotal?: number | string;
+  mrpAmount?: number | string;
 }
+
+// ✅ FIX: Ulka payment endpoint treats BOTH addon AND ala carte as "addon"
+const normalizeUlkaType = (rawType: string): string => {
+  const t = (rawType || "").toLowerCase().trim();
+
+  if (t === "renewal" || t === "renew") return "renewal";
+
+  if (
+    t === "alacarte" ||
+    t === "alacart" ||
+    t === "a-la-carte" ||
+    t === "addon" ||
+    t === "add-on" ||
+    t === "addons"
+  ) {
+    return "addon";
+  }
+
+  console.warn("[Checkout] Unknown type received:", rawType);
+  return "addon";
+};
 
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
 
   const idsParam = params.get("ids") || "";
-  const type = params.get("type") || "addon";
+  const rawType = params.get("type") || "addon";
 
-  // ✅ useMemo so `ids` is stable across renders
+  const ulkaType = useMemo(() => normalizeUlkaType(rawType), [rawType]);
+
   const ids = useMemo(
     () =>
       idsParam
@@ -52,6 +84,7 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [basePackRequired, setBasePackRequired] = useState<number | null>(null);
+  const [loadingMsg, setLoadingMsg] = useState("Connecting to server...");
 
   const token =
     typeof window !== "undefined"
@@ -62,7 +95,30 @@ function CheckoutContent() {
       ? localStorage.getItem("accountId") || ""
       : "";
 
-  // 1️⃣ Load selected packs from localStorage
+  // ==================================================
+  // LOADING MESSAGE ROTATION
+  // ==================================================
+  useEffect(() => {
+    if (!loading) return;
+
+    const messages = [
+      "Connecting to server...",
+      "Validating your selection...",
+      "Fetching recharge periods...",
+      "Preparing your order...",
+      "Almost there...",
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+      i = (i + 1) % messages.length;
+      setLoadingMsg(messages[i]);
+    }, 2200);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // 1️⃣ Load selected packs
   useEffect(() => {
     try {
       const stored = localStorage.getItem("packs");
@@ -88,6 +144,7 @@ function CheckoutContent() {
       setLoading(true);
       setError(null);
       setBasePackRequired(null);
+
       try {
         const res = await fetch("/api/recharge-periods", {
           method: "POST",
@@ -123,14 +180,21 @@ function CheckoutContent() {
         if (res.ok && data.success && data.data) {
           const container = data.data["0"] || data.data;
 
-          // ✅ Use typed Record instead of `any`
           const parsed: RechargePeriod[] = Object.entries(
             container as Record<string, RechargePeriodRaw>
           ).map(([key, value]) => ({
             id: key,
             title: value?.name || "",
             days: Number(value?.days) || 0,
-            total: parseFloat(String(value?.mrpTotal ?? 0)) || 0,
+            // ✅ Use mrpAmount (final total) first
+            total:
+              parseFloat(
+                String(
+                  value?.mrpAmount ??
+                    value?.mrpTotal ??
+                    0
+                )
+              ) || 0,
           }));
 
           setPeriods(parsed);
@@ -166,7 +230,10 @@ function CheckoutContent() {
     0
   );
 
-  // 3️⃣ Proceed to payment — HTML form POST
+  const selectedPeriod = periods.find((p) => p.id === selectedPeriodId);
+  const grandTotal = totalPacksPrice + (selectedPeriod?.total || 0);
+
+  // 3️⃣ Proceed to payment
   const handleProceed = async () => {
     if (!token || !accountId) {
       alert("Session expired. Please log in again.");
@@ -193,10 +260,19 @@ function CheckoutContent() {
 
       const fields: Record<string, string> = {
         account_ids: accountId,
-        type: type,
+        type: ulkaType,
         rperiod_id: selectedPeriodId,
-        remark: `${type} payment`,
+        remark: `${rawType} payment`,
       };
+
+      console.log("[Checkout] Submitting payment:", {
+        rawType,
+        ulkaType,
+        accountId,
+        ids,
+        selectedPeriodId,
+        fields,
+      });
 
       Object.entries(fields).forEach(([name, value]) => {
         const input = document.createElement("input");
@@ -223,46 +299,124 @@ function CheckoutContent() {
     }
   };
 
+  // ══════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════
   return (
     <>
       <UserHeader />
 
-      <div className="min-h-screen bg-[#0d0d0d] text-white pt-24 pb-32 px-4 md:px-8">
-        <div className="max-w-3xl mx-auto">
+      {/* LOADING OVERLAY */}
+      {loading && !basePackRequired && (
+        <div className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex items-center justify-center">
+          <div className="flex flex-col items-center max-w-sm w-full px-6">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 rounded-full border-4 border-red-100" />
+              <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-transparent border-t-red-600 border-r-red-600 animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+                  <ShoppingCart className="w-7 h-7 text-red-600 animate-pulse" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              <h2 className="text-lg font-black text-gray-900">
+                Preparing Checkout
+              </h2>
+            </div>
+
+            <p className="text-sm text-gray-500 font-medium text-center min-h-[20px]">
+              {loadingMsg}
+            </p>
+
+            <div className="flex items-center gap-1.5 mt-5">
+              <span
+                className="w-2 h-2 rounded-full bg-red-600 animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-red-500 animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-red-400 animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
+            </div>
+
+            <div className="mt-6 w-full h-1 bg-red-100 rounded-full overflow-hidden">
+              <div className="h-full w-1/3 bg-gradient-to-r from-red-600 to-red-400 rounded-full animate-[progressSlide_1.4s_ease-in-out_infinite]" />
+            </div>
+          </div>
+
+          <style jsx>{`
+            @keyframes progressSlide {
+              0% {
+                transform: translateX(-100%);
+              }
+              100% {
+                transform: translateX(400%);
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-white text-gray-900 pb-32">
+        <div className="max-w-3xl mx-auto px-4 md:px-8 pt-24">
+          {/* BACK */}
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-4 transition"
+            className="group flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-red-600 mb-4 transition-colors"
           >
-            <ArrowLeft size={16} />
+            <span className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-red-600 flex items-center justify-center transition-colors">
+              <ArrowLeft
+                size={16}
+                className="text-gray-600 group-hover:text-white transition-colors group-hover:-translate-x-0.5 duration-300"
+              />
+            </span>
             Back to Packs
           </button>
 
-          <h1 className="text-2xl font-bold text-yellow-400 mb-6">
-            Checkout
-          </h1>
+          {/* HERO */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
+              Review & <span className="text-red-600">Pay</span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-2">
+              Confirm your packs and complete the payment
+            </p>
+          </div>
 
-          {/* ⚠️ Base Pack Required Banner */}
+          {/* BASE PACK REQUIRED */}
           {basePackRequired ? (
-            <div className="bg-red-950 border-2 border-red-700 rounded-lg p-6 mb-6 text-center">
-              <AlertTriangle className="text-red-400 mx-auto mb-3" size={32} />
-              <p className="text-red-300 text-lg font-bold mb-2">
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-7 h-7 text-red-600" />
+              </div>
+              <p className="text-gray-900 text-lg font-black mb-2">
                 Base Pack Renewal Required
               </p>
-              <p className="text-red-400 text-sm mb-4 max-w-xl mx-auto">
+              <p className="text-gray-600 text-sm mb-5 max-w-xl mx-auto">
                 You must renew your base pack (ID: {basePackRequired}) first.
-                After renewing the base pack, you can add add-ons and
-                ala-carte packs.
+                After renewing the base pack, you can add add-ons and ala-carte
+                packs.
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
                 <button
                   onClick={() => router.push("/renew-packs")}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded transition"
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-full transition shadow-lg shadow-red-200"
                 >
                   Renew Base Pack
                 </button>
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="bg-gray-700 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded transition"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-6 py-2.5 rounded-full transition"
                 >
                   Back to Dashboard
                 </button>
@@ -270,153 +424,242 @@ function CheckoutContent() {
             </div>
           ) : (
             <>
-              {/* Generic error */}
-              {error && (
-                <div className="bg-red-950 border border-red-700 rounded-md p-4 text-red-400 mb-4 text-sm">
+              {error && !loading && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 mb-6 text-sm font-medium">
                   {error}
                 </div>
               )}
 
-              {/* Selected Packs */}
-              <div className="bg-black border border-gray-800 rounded-lg p-5 mb-5">
-                <h2 className="text-base font-bold mb-3 text-white">
-                  Selected Packs ({packs.length})
-                </h2>
+              {/* SELECTED PACKS */}
+              <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden mb-5 shadow-sm">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                  <ShoppingCart className="w-4 h-4 text-red-600" />
+                  <h2 className="text-sm font-black uppercase tracking-widest text-gray-900">
+                    Selected Packs
+                  </h2>
+                  <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                    {packs.length}
+                  </span>
+                </div>
 
-                {packs.length === 0 && !loading && (
-                  <p className="text-gray-400 text-sm">No packs selected.</p>
-                )}
+                <div className="divide-y divide-gray-50">
+                  {packs.length === 0 && !loading && (
+                    <p className="text-gray-500 text-sm p-5">
+                      No packs selected.
+                    </p>
+                  )}
 
-                <div className="divide-y divide-gray-800">
                   {packs.map((p) => (
                     <div
                       key={p.id}
-                      className="flex justify-between items-start py-3 gap-3"
+                      className="flex justify-between items-start gap-3 px-5 py-4"
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white">
-                          {p.description}
-                        </p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
-                          {p.boxtype_lbl}
-                        </p>
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                          <Layers className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-900">
+                            {p.description}
+                          </p>
+                          <p className="text-[11px] text-gray-400 mt-0.5">
+                            {p.boxtype_lbl}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-cyan-400 font-semibold text-sm shrink-0">
-                        ₹ {getPackPrice(p).toFixed(2)}
+                      <span className="text-red-600 font-black text-sm shrink-0">
+                        ₹{getPackPrice(p).toFixed(2)}
                       </span>
                     </div>
                   ))}
                 </div>
 
                 {packs.length > 0 && (
-                  <div className="flex justify-between items-center pt-3 mt-3 border-t border-gray-700">
-                    <span className="text-sm font-bold text-white">Total</span>
-                    <span className="text-yellow-400 font-bold text-lg">
-                      ₹ {totalPacksPrice.toFixed(2)}
+                  <div className="flex justify-between items-center px-5 py-4 border-t border-gray-100 bg-gray-50">
+                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                      Packs Subtotal
+                    </span>
+                    <span className="text-red-600 font-black text-lg">
+                      ₹{totalPacksPrice.toFixed(2)}
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Recharge Period */}
-              <div className="bg-black border border-gray-800 rounded-lg p-5 mb-5">
-                <h2 className="text-base font-bold mb-3 text-white">
-                  Select Recharge Period
-                </h2>
+              {/* RECHARGE PERIOD */}
+              <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden mb-5 shadow-sm">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                  <Calendar className="w-4 h-4 text-red-600" />
+                  <h2 className="text-sm font-black uppercase tracking-widest text-gray-900">
+                    Select Recharge Period
+                  </h2>
+                </div>
 
-                {loading && (
-                  <div className="flex items-center gap-2 text-gray-400 text-sm py-4">
-                    <Loader2 size={16} className="animate-spin" />
-                    Loading periods...
-                  </div>
-                )}
+                <div className="p-5">
+                  {!loading && periods.length === 0 && !error && (
+                    <p className="text-gray-500 text-sm">
+                      No recharge periods available.
+                    </p>
+                  )}
 
-                {!loading && periods.length === 0 && !error && (
-                  <p className="text-gray-400 text-sm">
-                    No recharge periods available.
-                  </p>
-                )}
-
-                <div className="space-y-2">
-                  {periods.map((period) => {
-                    const isSelected = selectedPeriodId === period.id;
-                    return (
-                      <button
-                        key={period.id}
-                        onClick={() => setSelectedPeriodId(period.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-md border text-left transition ${
-                          isSelected
-                            ? "border-green-500 bg-[#0f1f1f]"
-                            : "border-gray-800 bg-[#1a1a1a] hover:border-gray-600"
-                        }`}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            isSelected
-                              ? "border-green-500 bg-green-500"
-                              : "border-gray-600"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {periods.map((period) => {
+                      const isSel = selectedPeriodId === period.id;
+                      return (
+                        <button
+                          key={period.id}
+                          onClick={() => setSelectedPeriodId(period.id)}
+                          className={`group relative text-left p-4 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
+                            isSel
+                              ? "border-red-500 bg-gradient-to-br from-red-50 to-white shadow-lg shadow-red-100"
+                              : "border-gray-100 bg-white hover:border-red-200 hover:shadow-md"
                           }`}
                         >
-                          {isSelected && (
-                            <Check size={12} className="text-white" />
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white">
-                            {period.title}
-                          </p>
-                          {period.days > 0 && (
-                            <p className="text-[11px] text-gray-500">
-                              {period.days} days
-                            </p>
-                          )}
-                        </div>
-
-                        <span className="text-cyan-400 font-bold text-sm shrink-0">
-                          ₹ {period.total.toFixed(2)}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                isSel
+                                  ? "border-red-600 bg-red-600"
+                                  : "border-gray-300 group-hover:border-red-400"
+                              }`}
+                            >
+                              {isSel && (
+                                <Check size={12} className="text-white" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className={`font-bold text-sm ${
+                                  isSel ? "text-red-700" : "text-gray-900"
+                                }`}
+                              >
+                                {period.title}
+                              </p>
+                              {period.days > 0 && (
+                                <p className="text-[11px] text-gray-500 mt-0.5">
+                                  {period.days} days
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p
+                                className={`text-lg font-black ${
+                                  isSel ? "text-red-600" : "text-gray-900"
+                                }`}
+                              >
+                                ₹{period.total.toFixed(0)}
+                              </p>
+                              {isSel && (
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-red-600">
+                                  Selected
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              <div className="text-[11px] text-gray-500 mb-5 leading-relaxed">
-                Network Capacity Fee and GST extra as applicable. You will be
-                redirected to the Ulka secure payment page to complete the
-                payment.
+              {/* INFO NOTE */}
+              <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shrink-0">
+                  <IndianRupee size={14} className="text-white" />
+                </div>
+                <p className="text-[11px] text-gray-600 leading-relaxed font-medium pt-1">
+                  Network Capacity Fee and GST extra as applicable. You will
+                  be redirected to the Ulka secure payment page to complete
+                  the payment.
+                </p>
               </div>
 
-              <button
-                onClick={handleProceed}
-                disabled={
-                  loading ||
-                  submitting ||
-                  packs.length === 0 ||
-                  !selectedPeriodId
-                }
-                className={`w-full py-3 rounded-md font-bold text-base transition flex items-center justify-center gap-2 ${
-                  loading ||
-                  submitting ||
-                  packs.length === 0 ||
-                  !selectedPeriodId
-                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/40"
-                }`}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    Redirecting to Payment...
-                  </>
-                ) : (
-                  <>₹ Proceed to Payment</>
-                )}
-              </button>
+              {/* TOTAL SUMMARY */}
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-5 mb-5 text-white">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs uppercase tracking-widest font-bold text-white/60">
+                    Packs Subtotal
+                  </span>
+                  <span className="text-sm font-bold">
+                    ₹{totalPacksPrice.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs uppercase tracking-widest font-bold text-white/60">
+                    Recharge Period
+                  </span>
+                  <span className="text-sm font-bold">
+                    ₹{(selectedPeriod?.total || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                  <span className="text-xs uppercase tracking-widest font-bold text-red-400">
+                    Estimated Total
+                  </span>
+                  <span className="text-2xl font-black text-red-400">
+                    ₹{grandTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </>
           )}
         </div>
+
+        {/* BOTTOM PAYMENT BAR */}
+        {!basePackRequired && (
+          <div className="fixed bottom-0 left-0 right-0 z-40">
+            <div className="bg-black/95 backdrop-blur-md border-t border-red-500/30 shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
+              <div className="max-w-3xl mx-auto flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 px-4 md:px-8 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <p className="text-white font-bold text-sm">
+                      {packs.length} Pack{packs.length !== 1 ? "s" : ""} •{" "}
+                      {selectedPeriod?.title || "Select period"}
+                    </p>
+                  </div>
+                  <p className="text-red-400 font-black text-lg">
+                    ₹{grandTotal.toFixed(2)}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleProceed}
+                  disabled={
+                    loading ||
+                    submitting ||
+                    packs.length === 0 ||
+                    !selectedPeriodId
+                  }
+                  className={`shrink-0 px-8 py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                    loading ||
+                    submitting ||
+                    packs.length === 0 ||
+                    !selectedPeriodId
+                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-lg shadow-red-900/40 hover:shadow-red-900/60"
+                  }`}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      Proceed to Payment
+                      <ChevronRight size={16} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -426,8 +669,11 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
-          Loading...
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <Loader2 className="animate-spin text-red-600 mb-3" size={32} />
+            <p className="text-sm text-gray-500">Loading...</p>
+          </div>
         </div>
       }
     >

@@ -70,6 +70,8 @@ interface RechargePeriodRaw {
   days?: number | string;
   months?: number | string;
   amount?: number | string;
+  mrpTotal?: number | string;
+  mrpAmount?: number | string;
 }
 
 // ======================================================
@@ -93,7 +95,6 @@ function RenewContent() {
     "active"
   );
 
-  // ✅ Rotating loading message
   const [loadingMsg, setLoadingMsg] = useState("Connecting to server...");
 
   const token =
@@ -269,7 +270,6 @@ function RenewContent() {
     return expiredPacks;
   }, [activeTab, activePacks, availablePacks, expiredPacks]);
 
-  // ✅ Toggle — only ONE base pack at a time
   const toggleSelect = (bouqueId: number) => {
     const key = String(bouqueId);
     const isCurrentlySelected = !!selectedIds[key];
@@ -315,7 +315,6 @@ function RenewContent() {
     return unique;
   }, [allPacks, availablePacks, selectedIds]);
 
-  // ✅ safeIds — always only ONE base pack
   const safeIds = useMemo(() => {
     const basePacks: number[] = [];
     const nonBasePacks: number[] = [];
@@ -377,7 +376,8 @@ function RenewContent() {
               r.name || `${r.months} Month${r.months > 1 ? "s" : ""}`,
             days: r.days ?? 0,
             months: r.months ?? 0,
-            total: parseFloat(String(r.price ?? r.amount ?? 0)) || 0,
+            // ✅ FIX: use mrp (total) first — falls back to amount/price
+            total: parseFloat(String(r.mrp ?? r.amount ?? r.price ?? 0)) || 0,
           }))
           .filter((p) => p.total > 0)
           .sort((a, b) => a.months - b.months);
@@ -409,6 +409,7 @@ function RenewContent() {
           body: JSON.stringify({ ids: safeIds, account_id: accountId }),
         });
         const data = await res.json();
+        console.log("[Renew] Periods API response:", data);
 
         if (res.status === 422) {
           const msg = data?.data?.message || data?.message || "";
@@ -434,11 +435,23 @@ function RenewContent() {
               title: value?.name || "",
               days: Number(value?.days) || 0,
               months: Number(value?.months) || 0,
-              total: parseFloat(String(value?.amount ?? 0)) || 0,
+              // ✅ FIX: Use mrpAmount (final total incl. NCF)
+              //   Falls back to mrpTotal, then amount
+              total:
+                parseFloat(
+                  String(
+                    value?.mrpAmount ??
+                      value?.mrpTotal ??
+                      value?.amount ??
+                      0
+                  )
+                ) || 0,
             }))
             .filter((p) => p.total > 0 && p.days === 0)
             .sort((a, b) => a.months - b.months);
         }
+
+        console.log("[Renew] Final periods (with correct totals):", parsed);
 
         if (parsed.length > 0) {
           setPeriods(parsed);
@@ -578,7 +591,7 @@ function RenewContent() {
     <>
       <UserHeader />
 
-      {/* ═══════════ FULL-SCREEN LOADING OVERLAY ═══════════ */}
+      {/* LOADING OVERLAY */}
       {loading && (
         <div className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex items-center justify-center">
           <div className="flex flex-col items-center max-w-sm w-full px-6">
@@ -649,7 +662,7 @@ function RenewContent() {
 
       <div className="min-h-screen bg-white text-gray-900 pb-32">
         <div className="max-w-6xl mx-auto px-4 md:px-8 pt-24">
-          {/* ═══════════ BACK BUTTON ═══════════ */}
+          {/* BACK BUTTON */}
           <button
             onClick={() => router.back()}
             className="group flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-red-600 mb-4 transition-colors"
@@ -663,7 +676,7 @@ function RenewContent() {
             Back to Dashboard
           </button>
 
-          {/* ═══════════ HERO HEADER ═══════════ */}
+          {/* HERO HEADER */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-sm shadow-red-200">
@@ -682,14 +695,14 @@ function RenewContent() {
             </p>
           </div>
 
-          {/* ═══════════ ERRORS ═══════════ */}
+          {/* ERRORS */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 mb-4 text-sm font-medium">
               {error}
             </div>
           )}
 
-          {/* ═══════════ TABS ═══════════ */}
+          {/* TABS */}
           {!loading && (
             <div className="flex gap-2 mb-6 bg-gray-50 p-1.5 rounded-full border border-gray-100 w-full sm:w-fit overflow-x-auto">
               <button
@@ -725,7 +738,7 @@ function RenewContent() {
             </div>
           )}
 
-          {/* ═══════════ MODIFY LOADING ═══════════ */}
+          {/* MODIFY LOADING */}
           {!loading && activeTab === "modify" && modifyLoading && (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -746,7 +759,7 @@ function RenewContent() {
             </div>
           )}
 
-          {/* ═══════════ EMPTY ═══════════ */}
+          {/* EMPTY */}
           {!loading &&
             !(activeTab === "modify" && modifyLoading) &&
             currentPacks.length === 0 && (
@@ -765,7 +778,7 @@ function RenewContent() {
               </div>
             )}
 
-          {/* ═══════════ PACK LIST ═══════════ */}
+          {/* PACK LIST */}
           {!loading &&
             !(activeTab === "modify" && modifyLoading) &&
             currentPacks.length > 0 && (
@@ -785,7 +798,6 @@ function RenewContent() {
                           : "border-gray-100 hover:border-red-200 hover:shadow-md hover:shadow-red-50/60"
                       }`}
                     >
-                      {/* Left accent bar */}
                       <div
                         className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${
                           isSelected ? "bg-red-600" : "bg-red-100"
@@ -793,7 +805,6 @@ function RenewContent() {
                       />
 
                       <div className="flex items-center gap-4 p-4 md:p-5 pl-5 md:pl-6">
-                        {/* Checkbox */}
                         <div
                           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
                             isSelected
@@ -806,7 +817,6 @@ function RenewContent() {
                           )}
                         </div>
 
-                        {/* Icon + Info */}
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           <div
                             className={`hidden sm:flex w-12 h-12 rounded-xl items-center justify-center shrink-0 transition-colors ${
@@ -852,7 +862,6 @@ function RenewContent() {
                           </div>
                         </div>
 
-                        {/* Price */}
                         <div className="text-right shrink-0">
                           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
                             Price
@@ -871,7 +880,7 @@ function RenewContent() {
               </div>
             )}
 
-          {/* ═══════════ RECHARGE PERIODS ═══════════ */}
+          {/* RECHARGE PERIODS */}
           {safeIds.length > 0 && (
             <div className="mt-8">
               <div className="flex items-center gap-2 mb-4">
@@ -947,7 +956,7 @@ function RenewContent() {
                                 isSel ? "text-red-600" : "text-gray-900"
                               }`}
                             >
-                              ₹{period.total.toFixed(0)}
+                              ₹{period.total.toFixed(2)}
                             </p>
                             {isSel && (
                               <p className="text-[9px] font-bold uppercase tracking-widest text-red-600">
@@ -965,7 +974,7 @@ function RenewContent() {
           )}
         </div>
 
-        {/* ═══════════ BOTTOM BAR ═══════════ */}
+        {/* BOTTOM BAR */}
         {safeIds.length > 0 && (
           <div className="fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.3s_ease-out]">
             <div className="bg-black/95 backdrop-blur-md border-t border-red-500/30 shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
